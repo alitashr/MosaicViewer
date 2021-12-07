@@ -1,0 +1,44 @@
+.at-zoom-image-viewer-transformwrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  max-height: 100vh;
+  &.hidden{display: none;}
+}
+.react-transform-wrapper.transform-component-module_wrapper__1_Fgj {
+  width: 100% !important;
+  margin: auto !important;
+  display: inline-block;
+  cursor: grab;
+  &>div{
+    max-width: 100%;
+  }
+}
+
+img.zoom-image {
+  max-height: 100vh;
+}
+
+.tools {
+  position: absolute;
+  bottom: 8rem;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: fit-content;
+  z-index: 2;
+}
+.tools > button {
+  width: 3rem;
+  height: 3rem;
+  margin: 0.5rem;
+}
+
+.zoomTransformCanvas{
+  max-width: 100%;
+  max-height: 95vh;
+}
+#transformComponentCanvas{
+  position: absolute;
+  width: 100%;
+}

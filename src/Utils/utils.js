@@ -1,3 +1,6 @@
+
+var domain  = "http://192.168.0.136/photomosaic/default.aspx";//"https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
+
 export const getResizedFile = (image, fileType, isDoubletile = false) => {
   console.log("getResizedFile -> isDoubletile", isDoubletile);
   var imageCanvas = document.createElement("canvas");
@@ -54,10 +57,9 @@ function dataURItoBlob(dataURI) {
   return blob;
 }
 
-export const uploadDesign = (doubleTile, filename, callback) => {
+export const uploadDesign = (doubleTile, filename, callback, onerror) => {
   console.log("uploadDesign -> image with filename,", filename);
   const data = new FormData();
-  // data.append("resizedBmp", image);
   data.append("doubleTile", doubleTile);
   data.append("filename", filename);
   var request = new XMLHttpRequest();
@@ -66,7 +68,29 @@ export const uploadDesign = (doubleTile, filename, callback) => {
       if (callback) callback(request.response);
     }
   };
-  request.open("POST", "http://192.168.0.136/photomosaic/default.aspx", true);
+  request.open("POST", domain, true);
+  request.onerror = function () {
+    console.log("** An error occurred during the transaction");
+    if(onerror) onerror();
+  };
+  request.responseType = "text";
+  request.send(data);
+};
+
+export const getDefaultMosaicData = (defaultMosaicName, callback, onerror) => {
+  const data = new FormData();
+  data.append("mode", defaultMosaicName);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState === 4) {
+      if (callback) callback(request.response);
+    }
+  };
+  request.open("POST", domain, true);
+  request.onerror = function () {
+    console.log("** An error occurred during the transaction");
+    if(onerror) onerror();
+  };
   request.responseType = "text";
   request.send(data);
 };

@@ -1,114 +1,100 @@
 import React, { useEffect, useState } from "react";
-import { getFilename, getResizedFile, uploadDesign } from "../../Utils/utils";
+import { getDefaultMosaicData, getFilename, getResizedFile, uploadDesign } from "../../Utils/utils";
 import ImageDropContainer from "../ImageDropContainer";
 import Spinner from "../Spinner";
 import ZoomImageViewer from "../Zoom-Image-Viewer";
 
 const MainPage = () => {
-  const [imgSrc, setImgSrc] = useState(null);
   const [mosaicCanvasData, setMosaicCanvasData] = useState(null);
-  const [inputCanvasData, setInputCanvasData] = useState(null);
   const [inputImage, setInputImage] = useState(null);
-
   const [canvasSize, setCanvasSize] = useState({ x: 0, y: 0 });
-  const defaultZoom = sessionStorage.getItem("defaultZoom");
-  console.log("MainPage -> defaultZoom", defaultZoom);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const img = sessionStorage.getItem("design") || "./images/BEAT+MODA_compressed.jpg";
-    //setImgSrc(img);
-    console.log("useEffect -> img", img);
-    const data = sessionStorage.getItem("res") || "";
-    const canvasWid = sessionStorage.getItem("canvasWidth") || "";
-    const canvasHgt = sessionStorage.getItem("canvasHeight") || "";
-
-    // if (data !== "" && canvasWid !== "" && canvasHgt !== "" && data[0] !== "<") {
-    //   const mosaicData = JSON.parse(data);
-    //   drawTilesInCanvas(mosaicData, canvasWid, canvasHgt);
-    // }
+    setLoading(true);
+    loadDefaultMosaic();
   }, []);
-  const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt) => {
-    console.log("drawTilesInCanvas -> mosaicData", mosaicData);
 
-    var imageCanvas = document.getElementById("mosaicCanvas");
-    imageCanvas.width = canvasWid;
-    imageCanvas.height = canvasHgt;
-    var imageCanvasContext = imageCanvas.getContext("2d");
+  const loadDefaultMosaic = () => {
+    var defaultImage = new Image(); // Creates image object
+    defaultImage.src = "https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
+    defaultImage.onload = function () {
+      setCanvasSizeFromImage(defaultImage.width, defaultImage.height);
+      setInputImage(defaultImage);
+    };
 
-    var tileCount = 0;
-    imageCanvasContext.globalAlpha = 0.5;
-    mosaicData.forEach((element, index) => {
-      var tileImage = new Image(); // Creates image object
-      tileImage.src = "https://images.explorug.com/mosaic/" + element.thumbnail; // Assigns converted image to image object
-      tileImage.onload = function (ev) {
-        tileCount++;
+    getDefaultMosaicData("monalisa", function (res) {
+      const monalisaMosaicData = JSON.parse(res);
+      setMosaicCanvasData(monalisaMosaicData);
+    }, function(){
+      console.log('error while getting default data')
+    });
+  };
 
-        imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
-        if (tileCount === mosaicData.length - 1) {
-          setMosaicCanvasData(imageCanvas);
-        }
-      };
+  const setCanvasSizeFromImage = (wid, hgt) => {
+    const imgWid = 180 * Math.ceil(wid / 180);
+    const imgHgt = 240 * Math.ceil(hgt / 240);
+    setCanvasSize({
+      x: imgWid,
+      y: imgHgt,
     });
   };
   const handleImageChange = (imageFile) => {
     if (!imageFile) return;
+    console.time();
     var reader = new FileReader();
     reader.readAsDataURL(imageFile);
     reader.onloadend = function (e) {
-      var myImage = new Image(); // Creates image object
-      myImage.src = e.target.result; // Assigns converted image to image object
-
+      console.timeLog();
+      var myImage = new Image(); 
+      myImage.src = e.target.result; 
       let filename = getFilename(imageFile.name);
       let fileType = imageFile.type;
-
       myImage.onload = function (ev) {
-        const imgWid = 180 * Math.ceil(myImage.width / 180);
-        const imgHgt = 240 * Math.ceil(myImage.height / 240);
-        setCanvasSize({
-          x: imgWid,
-          y: imgHgt,
-        });
-
-        sessionStorage.setItem("canvasWidth", imgWid);
-        sessionStorage.setItem("canvasHeight", imgHgt);
-        //var file = getResizedFile(myImage, fileType, false);
-
-        // var inputImageCanvas = document.getElementById("inputImageCanvas");
-        // var inputImageCanvasContext = mosaicCanvas.getContext("2d");
-        // inputImageCanvasContext.clearRect(0, 0, inputImageCanvas.width, inputImageCanvas.height);
-        // inputImageCanvas.width = imgWid;
-        // inputImageCanvas.height = imgHgt;
-        // inputImageCanvasContext.drawImage(myImage, 0, 0, imgWid, imgHgt);
-        // console.log("input image drawn");
-        //setInputCanvasData(inputImageCanvas);
-
-        setInputImage(myImage);
-
+        console.timeLog();
+        setCanvasSizeFromImage(myImage.width, myImage.height);
+      
         var doubleTileFile = getResizedFile(myImage, fileType, true);
 
         uploadDesign(doubleTileFile, filename, function (res) {
           console.log("res", res);
+          console.timeLog();
 
-          if (res && res !== "" && res !== "maxsize") {
-            sessionStorage.setItem("res", res);
+          if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
+            //sessionStorage.setItem("res", res);
             const mosaicData = JSON.parse(res);
             console.log("mosaicData", mosaicData);
-
-            drawTilesInCanvas(mosaicData, imgWid, imgHgt);
+            setInputImage(myImage);
+            setMosaicCanvasData(mosaicData);
+          } else {
+            console.log("response is not json");
+            setLoading(false);
           }
+        }, function(){
+          console.log("Error while uploading image");
+          setLoading(false);
         });
       };
     };
   };
+  const handleOnLoadComplete = () => {
+    console.log("handleOnLoadComplete -> handleOnLoadComplete");
+    setLoading(false);
+  };
+
   return (
     <>
       {inputImage && mosaicCanvasData && (
-        <ZoomImageViewer mosaicCanvasData={mosaicCanvasData} inputImage={inputImage}></ZoomImageViewer>
+        <ZoomImageViewer
+          mosaicCanvasData={mosaicCanvasData}
+          inputImage={inputImage}
+          canvasSize={canvasSize}
+          handleOnLoadComplete={handleOnLoadComplete}
+        ></ZoomImageViewer>
       )}
 
       <ImageDropContainer onImageChange={handleImageChange} />
-
-      <Spinner />
+      {loading && <Spinner />}
       <div id="canvasArea">
         <canvas id="mosaicCanvas"></canvas>
       </div>

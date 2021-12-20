@@ -23,7 +23,6 @@ const ImageDropContainer = props => {
     preventDefaults(e);
   let dt = e.dataTransfer;
       let files = dt.files;
-      console.log("handleDrop -> files", files)
       onImageChange(files[0]);
       setHighlight(false)
     
@@ -34,7 +33,7 @@ const ImageDropContainer = props => {
     }
   }
   return (
-    <div>
+    <>
          <label className="custom-file-label" htmlFor="customFile">
           <div id="imageDropContainer" className={classNames({'highlight': highlight})} 
           onDragEnter={handleDragEnter}
@@ -53,7 +52,7 @@ const ImageDropContainer = props => {
           </div>
         </label>
 
-    </div>
+    </>
   );
 };
 

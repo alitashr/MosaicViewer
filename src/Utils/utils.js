@@ -1,5 +1,7 @@
 
-var domain  = "http://192.168.0.136/photomosaic/default.aspx";//"https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
+export const mainDomain ="https://lab.explorug.com/"; 
+export const imageDomain = "https://images.explorug.com/";
+export const domain  =  mainDomain+"photomosaic/default.aspx";//"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
 
 export const getResizedFile = (image, fileType, isDoubletile = false) => {
   console.log("getResizedFile -> isDoubletile", isDoubletile);
@@ -11,7 +13,7 @@ export const getResizedFile = (image, fileType, isDoubletile = false) => {
   imageCanvas.width = (2 * imageWidth) / 30;
   imageCanvas.height = (2 * imageHeight) / 40;
   imageCanvasContext.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
-  console.log("onImageChange -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
+  //console.log("onImageChange -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
   let imgData = imageCanvas.toDataURL(fileType, 0.75);
   // let blob = dataURItoBlob(imgData);
   //$("#canvasArea").append(imageCanvas);
@@ -93,4 +95,30 @@ export const getDefaultMosaicData = (defaultMosaicName, callback, onerror) => {
   };
   request.responseType = "text";
   request.send(data);
+};
+
+
+export const downloadImageData = (canvas, name, mime) => {
+  const mimetype = mime === "jpg" ? "jpeg" : mime;
+  const downloadBlob = blob => {
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.setAttribute("download", name);
+
+    setTimeout(function() {
+      if (navigator.msSaveOrOpenBlob) {
+        navigator.msSaveOrOpenBlob(blob, name);
+      } else {
+        anchor.click();
+      }
+    }, 100);
+  };
+  const type = `image/${mimetype}`;
+  if (canvas.toBlob) {
+    canvas.toBlob(downloadBlob, type, 0.95);
+    return;
+  }
+  const dataurl = canvas.toDataURL(type, 0.95);
+  downloadBlob(dataURItoBlob(dataurl));
 };

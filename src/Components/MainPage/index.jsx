@@ -12,6 +12,7 @@ const MainPage = () => {
   const [loading, setLoading] = useState(true);
   const [mosaicLoadComplete, setMosaicLoadComplete] = useState(false);
 
+  const [mosaicFilename, setMosaicFilename]= useState('');
   useEffect(() => {
     setLoading(true);
     loadDefaultMosaic();
@@ -57,6 +58,7 @@ const MainPage = () => {
       var myImage = new Image(); 
       myImage.src = e.target.result; 
       let filename = getFilename(imageFile.name);
+      setMosaicFilename(filename);
       let fileType = imageFile.type;
       myImage.onload = function (ev) {
         console.timeLog();
@@ -106,9 +108,8 @@ const MainPage = () => {
     var imageCanvas = document.getElementById("transformComponentCanvas");
     downloadCanvasContext.globalAlpha = 0.65;
     downloadCanvasContext.drawImage(imageCanvas, 0, 0, imageCanvas.width, imageCanvas.height);
-   
-    const mosaicFileName = 'MosaicCanvas';
-    downloadImageData(downloadCanvas, `${mosaicFileName}.jpg`, "jpg");
+    const filename =  mosaicFilename && mosaicFilename!='' ? mosaicFilename.substring(0, mosaicFilename.lastIndexOf('.')):'MonalisaMosaic';
+    downloadImageData(downloadCanvas, `${filename}-mosaic.jpg`, "jpg");
   }
 
   return (

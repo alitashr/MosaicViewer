@@ -56,42 +56,6 @@ const ZoomImageViewer = (props) => {
     alignCanvasToCenter();
   }, [windowSize]);
 
-  const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt, onComplete) => {
-    var imageCanvas = document.getElementById("transformComponentCanvas");
-    var imageCanvasContext = imageCanvas.getContext("2d");
-    imageCanvasContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-    imageCanvas.width = canvasWid;
-    imageCanvas.height = canvasHgt;
-    var tileCount = 0;
-    setLoadingPercentage(0);
-    imageCanvasContext.globalAlpha = 0.65;
-
-    mosaicData.forEach((element, index) => {
-      var tileImage = new Image(); // Creates image object
-      tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
-      tileImage.crossOrigin = "Anonymous";
-   
-      tileImage.onload = function (ev) {
-        if (tileCount === 1) {
-          if (onComplete) onComplete();
-        }
-        tileCount++;
-        const percent = (tileCount * 100) / mosaicData.length;
-        //if (percent % 5 === 0) 
-        setLoadingPercentage(percent);
-
-        imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
-        if (tileCount === mosaicData.length - 1) {
-          console.timeLog();
-          setTimeout(() => {
-            setLoadingPercentage(0);
-          }, 1000);
-          if (handleOnLoadComplete) handleOnLoadComplete();
-        }
-      };
-    });
-  };
-
   const alignCanvasToCenter = () => {
     if (zoomRef && zoomRef.current) {
       zoomRef.current.centerView();
@@ -101,6 +65,44 @@ const ZoomImageViewer = (props) => {
   };
   useEffect(() => {
     console.log("ZoomImageViewer -> mosaicCanvasData", mosaicCanvasData.length);
+    let la = true;
+
+    const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt, onComplete) => {
+      var imageCanvas = document.getElementById("transformComponentCanvas");
+      var imageCanvasContext = imageCanvas.getContext("2d");
+      imageCanvasContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+      imageCanvas.width = canvasWid;
+      imageCanvas.height = canvasHgt;
+      var tileCount = 0;
+      setLoadingPercentage(0);
+      imageCanvasContext.globalAlpha = 0.65;
+      if (!la) return;
+      mosaicData.forEach((element, index) => {
+        var tileImage = new Image(); // Creates image object
+        tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
+        tileImage.crossOrigin = "Anonymous";
+        if (!la) return;
+        tileImage.onload = function (ev) {
+          if (!la) return;
+          if (tileCount === 1) {
+            if (onComplete) onComplete();
+          }
+          tileCount++;
+          const percent = Math.ceil((tileCount * 100) / mosaicData.length / 5) * 5;
+          setLoadingPercentage(percent);
+          if (!la) return;
+          imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
+          if (tileCount === mosaicData.length - 1) {
+            console.timeLog();
+            setTimeout(() => {
+              setLoadingPercentage(0);
+            }, 1000);
+            if (handleOnLoadComplete) handleOnLoadComplete();
+          }
+        };
+      });
+    };
+
     drawTilesInCanvas(mosaicCanvasData, canvasSize.x, canvasSize.y);
     setTimeout(() => {
       alignCanvasToCenter();
@@ -108,20 +110,23 @@ const ZoomImageViewer = (props) => {
 
     setLoading(false);
     if (handleOnImageLoad) handleOnImageLoad();
-    
+
+    return () => {
+      la = false;
+    };
   }, [mosaicCanvasData]);
 
   useEffect(() => {
     var mosaicCanvas = document.getElementById("inputMosaicImage");
     var mosaicContext = mosaicCanvas.getContext("2d");
     mosaicContext.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
-    
+
     inputImage.crossOrigin = "Anonymous";
-   
+
     mosaicCanvas.width = inputImage.width;
     mosaicCanvas.height = inputImage.height;
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
-  
+
     setLoading(false);
   }, [inputImage]);
   return (

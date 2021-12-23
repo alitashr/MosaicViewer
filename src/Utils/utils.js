@@ -1,10 +1,8 @@
-
-export const mainDomain ="https://lab.explorug.com/"; 
+export const mainDomain = "https://lab.explorug.com/";
 export const imageDomain = "https://images.explorug.com/";
-export const domain  =  mainDomain+"photomosaic/default.aspx";//"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
+export const domain = mainDomain + "Photomosaic/Default.aspx"; //"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
 
 export const getResizedFile = (image, fileType, isDoubletile = false) => {
-  console.log("getResizedFile -> isDoubletile", isDoubletile);
   var imageCanvas = document.createElement("canvas");
   var imageCanvasContext = imageCanvas.getContext("2d");
 
@@ -13,6 +11,7 @@ export const getResizedFile = (image, fileType, isDoubletile = false) => {
   imageCanvas.width = (2 * imageWidth) / 30;
   imageCanvas.height = (2 * imageHeight) / 40;
   imageCanvasContext.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
+  console.log("getResizedFile -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
   //console.log("onImageChange -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
   let imgData = imageCanvas.toDataURL(fileType, 0.75);
   // let blob = dataURItoBlob(imgData);
@@ -73,7 +72,7 @@ export const uploadDesign = (doubleTile, filename, callback, onerror) => {
   request.open("POST", domain, true);
   request.onerror = function () {
     console.log("** An error occurred during the transaction");
-    if(onerror) onerror();
+    if (onerror) onerror();
   };
   request.responseType = "text";
   request.send(data);
@@ -91,22 +90,21 @@ export const getDefaultMosaicData = (defaultMosaicName, callback, onerror) => {
   request.open("POST", domain, true);
   request.onerror = function () {
     console.log("** An error occurred during the transaction");
-    if(onerror) onerror();
+    if (onerror) onerror();
   };
   request.responseType = "text";
   request.send(data);
 };
 
-
 export const downloadImageData = (canvas, name, mime) => {
   const mimetype = mime === "jpg" ? "jpeg" : mime;
-  const downloadBlob = blob => {
+  const downloadBlob = (blob) => {
     var url = URL.createObjectURL(blob);
     var anchor = document.createElement("a");
     anchor.href = url;
     anchor.setAttribute("download", name);
 
-    setTimeout(function() {
+    setTimeout(function () {
       if (navigator.msSaveOrOpenBlob) {
         navigator.msSaveOrOpenBlob(blob, name);
       } else {

@@ -120,12 +120,11 @@ const ZoomImageViewer = (props) => {
     var mosaicCanvas = document.getElementById("inputMosaicImage");
     var mosaicContext = mosaicCanvas.getContext("2d");
     mosaicContext.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
-
     inputImage.crossOrigin = "Anonymous";
-
-    mosaicCanvas.width = inputImage.width;
-    mosaicCanvas.height = inputImage.height;
+    mosaicCanvas.width = canvasSize.x; //inputImage.width;
+    mosaicCanvas.height = canvasSize.y; // inputImage.height;
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
+    console.log("inputImage drawn in canvas od size -> ",  mosaicCanvas.width, mosaicCanvas.height)
 
     setLoading(false);
   }, [inputImage]);

@@ -54,18 +54,20 @@ const MainPage = () => {
     var reader = new FileReader();
     reader.readAsDataURL(imageFile);
     reader.onloadend = function (e) {
-      console.timeLog();
+       console.timeLog();
       var myImage = new Image(); 
       myImage.src = e.target.result; 
       let filename = getFilename(imageFile.name);
       setMosaicFilename(filename);
       let fileType = imageFile.type;
       myImage.onload = function (ev) {
+      console.log("handleImageChange -> myImage", myImage.width, myImage.height )
         console.timeLog();
         setCanvasSizeFromImage(myImage.width, myImage.height);
       
         var doubleTileFile = getResizedFile(myImage, fileType, true);
-
+        setInputImage(myImage);
+        myImage.onload = null
         uploadDesign(doubleTileFile, filename, function (res) {
           console.log("res", res);
           console.timeLog();
@@ -73,7 +75,7 @@ const MainPage = () => {
           if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
             //sessionStorage.setItem("res", res);
             const mosaicData = JSON.parse(res);
-            setInputImage(myImage);
+           
             setMosaicCanvasData(mosaicData);
           } else {
             console.log("response is not json");

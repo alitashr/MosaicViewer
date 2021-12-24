@@ -74,15 +74,16 @@ const MainPage = () => {
         uploadDesign(
           doubleTileFile,
           filename,
+          myImage.width,
+          myImage.height,
           function (res) {
-            console.log("res", res);
+            //console.log("res", res);
             console.timeLog();
 
             if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
               //sessionStorage.setItem("res", res);
               const mosaicData = JSON.parse(res);
               setInputImage(myImage);
-
               setMosaicCanvasData(mosaicData);
             } else {
               console.log("response is not json");
@@ -117,7 +118,7 @@ const MainPage = () => {
     downloadCanvasContext.drawImage(mosaicCanvas, 0, 0, downloadCanvas.width, downloadCanvas.height);
 
     var imageCanvas = document.getElementById("transformComponentCanvas");
-    downloadCanvasContext.globalAlpha = 0.65;
+    downloadCanvasContext.globalAlpha = 0.88;
     downloadCanvasContext.drawImage(imageCanvas, 0, 0, imageCanvas.width, imageCanvas.height);
     const filename =
       mosaicFilename && mosaicFilename != ""

@@ -1,4 +1,4 @@
-export const mainDomain = "https://lab.explorug.com/";
+export const mainDomain = "http://192.168.1.94/";//"https://lab.explorug.com/";
 export const imageDomain = "https://images.explorug.com/";
 export const domain = mainDomain + "Photomosaic/Default.aspx"; //"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
 
@@ -58,11 +58,13 @@ function dataURItoBlob(dataURI) {
   return blob;
 }
 
-export const uploadDesign = (doubleTile, filename, callback, onerror) => {
+export const uploadDesign = (doubleTile, filename, width, height, callback, onerror) => {
   console.log("uploadDesign -> image with filename,", filename);
   const data = new FormData();
   data.append("doubleTile", doubleTile);
   data.append("filename", filename);
+  data.append("width", width);
+  data.append("height", height);
   var request = new XMLHttpRequest();
   request.onreadystatechange = function () {
     if (request.readyState === 4) {

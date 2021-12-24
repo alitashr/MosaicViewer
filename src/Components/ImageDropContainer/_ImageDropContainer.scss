@@ -31,7 +31,7 @@ div#inputSubmit {
   cursor: pointer;
 }
 
-#customFile, #errorMessage {
+#customFile {
   display: none;
 }
 
@@ -42,4 +42,8 @@ div#inputSubmit {
 div#errorMessage {
   font-size: 0.75em;
   color: #555;
+}
+#uploadMessage {
+  font-size: 1.2rem;
+    color: #555;
 }

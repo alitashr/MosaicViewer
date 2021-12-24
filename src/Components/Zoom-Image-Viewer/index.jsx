@@ -68,6 +68,8 @@ const ZoomImageViewer = (props) => {
     let la = true;
 
     const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt, onComplete) => {
+      if (!mosaicData || !mosaicData.length) return;
+
       var imageCanvas = document.getElementById("transformComponentCanvas");
       var imageCanvasContext = imageCanvas.getContext("2d");
       imageCanvasContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
@@ -75,32 +77,81 @@ const ZoomImageViewer = (props) => {
       imageCanvas.height = canvasHgt;
       var tileCount = 0;
       setLoadingPercentage(0);
-      imageCanvasContext.globalAlpha = 0.65;
+      imageCanvasContext.globalAlpha = 0.88;
       if (!la) return;
-      mosaicData.forEach((element, index) => {
-        var tileImage = new Image(); // Creates image object
-        tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
-        tileImage.crossOrigin = "Anonymous";
+      function sliceIntoChunks(arr, chunkSize) {
+        const res = [];
+        for (let i = 0; i < arr.length; i += chunkSize) {
+          const chunk = arr.slice(i, i + chunkSize);
+          res.push(chunk);
+        }
+        return res;
+      }
+
+      const numOfChunks = mosaicData.length > 10000 ? 30 : 10;
+      var mosaicDataChunks = sliceIntoChunks(mosaicData, Math.ceil(mosaicData.length / numOfChunks));
+      console.log("drawTilesInCanvas -> mosaicDataChunks", mosaicDataChunks);
+
+      let chunkCount = 0;
+
+      const loadImagesArray = (mosaicDataArr) => {
+        var imageCountOfThisArr = 0;
+        console.log("loadImagesArray", mosaicDataArr.length, la);
         if (!la) return;
-        tileImage.onload = function (ev) {
+        mosaicDataArr.forEach((element, index) => {
+          var tileImage = new Image(); // Creates image object
+          tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
+          tileImage.crossOrigin = "Anonymous";
           if (!la) return;
-          if (tileCount === 1) {
-            if (onComplete) onComplete();
-          }
-          tileCount++;
-          const percent = Math.ceil((tileCount * 100) / mosaicData.length / 5) * 5;
-          setLoadingPercentage(percent);
-          if (!la) return;
-          imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
-          if (tileCount === mosaicData.length - 1) {
-            console.timeLog();
-            setTimeout(() => {
-              setLoadingPercentage(0);
-            }, 1000);
-            if (handleOnLoadComplete) handleOnLoadComplete();
-          }
-        };
-      });
+          tileImage.onload = function (ev) {
+            if (!la) return;
+            imageCountOfThisArr++;
+            tileCount++;
+            const percent = Math.ceil((tileCount * 100) / mosaicData.length / 5) * 5;
+            setLoadingPercentage(percent);
+            if (!la) return;
+            imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
+            if (imageCountOfThisArr === mosaicDataArr.length - 1) {
+              console.timeLog();
+              if (!la) return;
+              chunkCount++;
+              if (chunkCount <= mosaicDataChunks.length - 1) loadImagesArray(mosaicDataChunks[chunkCount]);
+              else {
+                setTimeout(() => {
+                  setLoadingPercentage(0);
+                }, 1000);
+                if (handleOnLoadComplete) handleOnLoadComplete();
+              }
+            }
+          };
+        });
+      };
+      loadImagesArray(mosaicDataChunks[0]);
+
+      // mosaicData.forEach((element, index) => {
+      //   var tileImage = new Image(); // Creates image object
+      //   tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
+      //   tileImage.crossOrigin = "Anonymous";
+      //   if (!la) return;
+      //   tileImage.onload = function (ev) {
+      //     if (!la) return;
+      //     if (tileCount === 1) {
+      //       if (onComplete) onComplete();
+      //     }
+      //     tileCount++;
+      //     const percent = Math.ceil((tileCount * 100) / mosaicData.length / 5) * 5;
+      //     setLoadingPercentage(percent);
+      //     if (!la) return;
+      //     imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
+      //     if (tileCount === mosaicData.length - 1) {
+      //       console.timeLog();
+      //       setTimeout(() => {
+      //         setLoadingPercentage(0);
+      //       }, 1000);
+      //       if (handleOnLoadComplete) handleOnLoadComplete();
+      //     }
+      //   };
+      // });
     };
 
     drawTilesInCanvas(mosaicCanvasData, canvasSize.x, canvasSize.y);
@@ -113,6 +164,7 @@ const ZoomImageViewer = (props) => {
 
     return () => {
       la = false;
+      console.log("useEffect -> la", la);
     };
   }, [mosaicCanvasData]);
 
@@ -124,7 +176,7 @@ const ZoomImageViewer = (props) => {
     mosaicCanvas.width = canvasSize.x; //inputImage.width;
     mosaicCanvas.height = canvasSize.y; // inputImage.height;
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
-    console.log("inputImage drawn in canvas od size -> ",  mosaicCanvas.width, mosaicCanvas.height)
+    console.log("inputImage drawn in canvas od size -> ", mosaicCanvas.width, mosaicCanvas.height);
 
     setLoading(false);
   }, [inputImage]);

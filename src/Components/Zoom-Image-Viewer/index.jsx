@@ -69,7 +69,6 @@ const ZoomImageViewer = (props) => {
 
     const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt, onComplete) => {
       if (!mosaicData || !mosaicData.length) return;
-
       var imageCanvas = document.getElementById("transformComponentCanvas");
       var imageCanvasContext = imageCanvas.getContext("2d");
       imageCanvasContext.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
@@ -88,15 +87,17 @@ const ZoomImageViewer = (props) => {
         return res;
       }
 
-      const numOfChunks = mosaicData.length > 10000 ? 30 : 10;
-      var mosaicDataChunks = sliceIntoChunks(mosaicData, Math.ceil(mosaicData.length / numOfChunks));
+      //const numOfChunks = mosaicData.length > 10000 ? 30 : 10;
+      // var mosaicDataChunks = sliceIntoChunks(mosaicData, Math.ceil(mosaicData.length / numOfChunks));
+      const chunksSize = 100;
+      var mosaicDataChunks = sliceIntoChunks(mosaicData, chunksSize);
       console.log("drawTilesInCanvas -> mosaicDataChunks", mosaicDataChunks);
 
       let chunkCount = 0;
 
       const loadImagesArray = (mosaicDataArr) => {
         var imageCountOfThisArr = 0;
-        console.log("loadImagesArray", mosaicDataArr.length, la);
+        //console.log("loadImagesArray", mosaicDataArr.length, la);
         if (!la) return;
         mosaicDataArr.forEach((element, index) => {
           var tileImage = new Image(); // Creates image object
@@ -112,7 +113,6 @@ const ZoomImageViewer = (props) => {
             if (!la) return;
             imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
             if (imageCountOfThisArr === mosaicDataArr.length - 1) {
-              console.timeLog();
               if (!la) return;
               chunkCount++;
               if (chunkCount <= mosaicDataChunks.length - 1) loadImagesArray(mosaicDataChunks[chunkCount]);
@@ -164,7 +164,6 @@ const ZoomImageViewer = (props) => {
 
     return () => {
       la = false;
-      console.log("useEffect -> la", la);
     };
   }, [mosaicCanvasData]);
 
@@ -176,8 +175,6 @@ const ZoomImageViewer = (props) => {
     mosaicCanvas.width = canvasSize.x; //inputImage.width;
     mosaicCanvas.height = canvasSize.y; // inputImage.height;
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
-    console.log("inputImage drawn in canvas od size -> ", mosaicCanvas.width, mosaicCanvas.height);
-
     setLoading(false);
   }, [inputImage]);
   return (

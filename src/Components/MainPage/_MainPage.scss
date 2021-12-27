@@ -14,3 +14,11 @@ div#canvasArea {
   right: 2rem;
   border-radius: 0.5rem;
 }
+
+.App.at-zoom-image-viewer{
+  width: 100%;
+  display: flex;
+  &>.at-zoom-image-viewer-transformwrapper{
+    align-self: center;
+  }
+}

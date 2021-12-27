@@ -1,17 +1,16 @@
-export const mainDomain = "http://192.168.1.94/";//"https://lab.explorug.com/";
+export const mainDomain = "http://192.168.1.136/";//"https://lab.explorug.com/";
 export const imageDomain = "https://images.explorug.com/";
 export const domain = mainDomain + "Photomosaic/Default.aspx"; //"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
 
-export const getResizedFile = (image, fileType, isDoubletile = false) => {
+export const getResizedFile = (image, inputImageWid, inputImageHgt, fileType, isDoubletile = false) => {
   var imageCanvas = document.createElement("canvas");
   var imageCanvasContext = imageCanvas.getContext("2d");
 
-  const imageWidth = 180 * Math.ceil(image.width / 180);
-  const imageHeight = 240 * Math.ceil(image.height / 240);
+  const imageWidth = 180 * Math.ceil(inputImageWid / 180);
+  const imageHeight = 240 * Math.ceil(inputImageHgt / 240);
   imageCanvas.width = (2 * imageWidth) / 30;
   imageCanvas.height = (2 * imageHeight) / 40;
   imageCanvasContext.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
-  console.log("getResizedFile -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
   //console.log("onImageChange -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
   let imgData = imageCanvas.toDataURL(fileType, 0.75);
   // let blob = dataURItoBlob(imgData);
@@ -59,7 +58,6 @@ function dataURItoBlob(dataURI) {
 }
 
 export const uploadDesign = (doubleTile, filename, width, height, callback, onerror) => {
-  console.log("uploadDesign -> image with filename,", filename);
   const data = new FormData();
   data.append("doubleTile", doubleTile);
   data.append("filename", filename);

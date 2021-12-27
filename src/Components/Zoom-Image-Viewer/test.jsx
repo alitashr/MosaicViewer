@@ -13,17 +13,6 @@ const ZoomImageViewer = (props) => {
   const [refCallback, elem] = useDoubleClick(onDblClick);
   const reloadRef = useRef(null);
 
-  useEffect(() => {
-   if (showMosaic) {
-      //setTimeout(() => {
-        console.log("//setTimeout -> reloadRef", reloadRef)
-       
-        //reloadRef.current.context.dispatch.resetTransform();
-        
-      //}, 1000);
-    }
-  }, [showMosaic]);
-
   function onDblClick() {
     mouseEvent = "dbl click";
   }

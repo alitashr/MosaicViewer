@@ -10,8 +10,6 @@ const ImageDropContainer = props => {
   const [highlight, setHighlight] = useState(false);
   
   const handleDragEnter = (e)=>{
-    console.log("highlight", highlight)
-
     preventDefaults(e);
     setHighlight(true)
   }

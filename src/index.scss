@@ -1,9 +1,9 @@
-@import 'antd/dist/antd.css'; 
+@import "antd/dist/antd.css";
 
 :root {
   --spinner-width: 4rem;
   --spinner-height: 4rem;
-  --spinner-border-width: .25em;
+  --spinner-border-width: 0.25em;
   --spinner-color: white;
   --active-color: black;
   --drop-container-height: 6rem;
@@ -11,9 +11,13 @@
   --color-primary-hover: #0930ae;
   --color-text-primary: white;
 }
+#root {
+  display: flex;
+  width: 100%;
+  height: calc(100% - 8rem);
+}
 
 @import "./Components/Zoom-Image-Viewer/ZoomImageViwer";
 @import "./Components/ImageDropContainer/ImageDropContainer";
 @import "./Components/Spinner/Spinner";
 @import "./Components/MainPage/MainPage";
-

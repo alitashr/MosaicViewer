@@ -53,7 +53,6 @@ const MainPage = () => {
     if (!imageFile) return;
     setLoading(true);
     setMosaicLoadComplete(false);
-    console.log("handleImageChange -> setLoading");
     console.time();
     var reader = new FileReader();
     reader.readAsDataURL(imageFile);
@@ -65,17 +64,20 @@ const MainPage = () => {
       setMosaicFilename(filename);
       let fileType = imageFile.type;
       myImage.onload = function (ev) {
-        console.log("handleImageChange -> myImage", myImage.width, myImage.height);
-        console.timeLog();
-        setCanvasSizeFromImage(myImage.width, myImage.height);
+        var inputImageWid = myImage.width;
+        var inputImageHgt = myImage.height;
+        inputImageWid = inputImageWid<4000 ? 4000: inputImageWid;
+        inputImageHgt = myImage.height/myImage.width * inputImageWid;
 
-        var doubleTileFile = getResizedFile(myImage, fileType, true);
+        console.timeLog();
+        setCanvasSizeFromImage(inputImageWid, inputImageHgt);
+        var doubleTileFile = getResizedFile(myImage, inputImageWid, inputImageHgt, fileType, true);
         myImage.onload = null;
         uploadDesign(
           doubleTileFile,
           filename,
-          myImage.width,
-          myImage.height,
+          inputImageWid,
+          inputImageHgt,
           function (res) {
             //console.log("res", res);
             console.timeLog();
@@ -99,7 +101,7 @@ const MainPage = () => {
     };
   };
   const handleOnImageLoad = () => {
-    console.log("handleOnLoadComplete -> handleOnLoadComplete");
+    console.log("handleOnImageLoad -> handleOnImageLoad");
     setLoading(false);
   };
   const handleOnLoadComplete = () => {
@@ -108,7 +110,6 @@ const MainPage = () => {
     setMosaicLoadComplete(true);
   };
   const downloadMosaic = () => {
-    console.log("downloadMosaic -> downloadMosaic");
     var downloadCanvas = document.createElement("canvas");
     var downloadCanvasContext = downloadCanvas.getContext("2d");
 

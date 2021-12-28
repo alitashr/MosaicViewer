@@ -43,9 +43,9 @@ const ImageDropContainer = props => {
               <div className="custom-file">
                 <input type="file" className="custom-file-input" id="customFile" accept="image/*"
                 onChange={handleFileInput} />
-                Click here to upload your image
+                View mosaic of your own image
                 <div id="uploadMessage">
-                For best result, please upload a high resolution image
+                For best result, please select a high resolution image
                 </div>
               </div>
             </div>

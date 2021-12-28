@@ -14,9 +14,9 @@
 #root {
   display: flex;
   width: 100%;
-  height: calc(100% - 8rem);
+  height: 100%;
 }
-
+@import "./Components/Fullscreen/Fullscreen";
 @import "./Components/Zoom-Image-Viewer/ZoomImageViwer";
 @import "./Components/ImageDropContainer/ImageDropContainer";
 @import "./Components/Spinner/Spinner";

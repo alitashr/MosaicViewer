@@ -1,5 +1,5 @@
 .at-zoom-image-viewer-transformwrapper {
-  width: 100%;
+  height: 100%;
   // height: calc(100% - 7rem);
   // max-height: calc(100vh - 7rem);
   position: relative;
@@ -23,7 +23,7 @@ img.zoom-image {
 
 .tools {
   position: absolute;
-  bottom: 2rem;
+  bottom: 8rem;
   left: 0;
   right: 0;
   margin: auto;
@@ -38,7 +38,7 @@ img.zoom-image {
 
 .zoomTransformCanvas {
   max-width: 100%;
-  max-height: calc(100vh - 8rem);
+  max-height: calc(100vh - 0.5rem);
 }
 #transformComponentCanvas {
   position: absolute;

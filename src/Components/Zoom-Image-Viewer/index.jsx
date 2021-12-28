@@ -10,14 +10,27 @@ const wheel = {
   step: 10,
 };
 const zoomIn = {
-  step: 10,
+  step: 0.1,
+  animationTime:2000
 };
 const zoomOut = {
-  step: 10,
+  step: 0.1,
+};
+const doubleClick = {
+  step: 0.5,
+  animationTime:300
 };
 
 const ZoomImageViewer = (props) => {
-  const { imageSrc, mosaicCanvasData, inputImage, canvasSize, handleOnLoadComplete, handleOnImageLoad, alpha=0.88 } = props;
+  const {
+    imageSrc,
+    mosaicCanvasData,
+    inputImage,
+    canvasSize,
+    handleOnLoadComplete,
+    handleOnImageLoad,
+    alpha = 0.88,
+  } = props;
   const windowSize = useWindowSize();
   const [currentZoom, setCurrentZoom] = useState(1);
 
@@ -32,6 +45,7 @@ const ZoomImageViewer = (props) => {
     maxScale: 12,
     limitToBounds: true,
     initialScale: currentZoom,
+    
   };
   useEffect(() => {
     const image = new Image();
@@ -53,17 +67,20 @@ const ZoomImageViewer = (props) => {
   }, [imageSrc]);
 
   useEffect(() => {
+
     alignCanvasToCenter();
   }, [windowSize]);
 
   const alignCanvasToCenter = () => {
     if (zoomRef && zoomRef.current) {
-      zoomRef.current.centerView();
-      //zoomRef.current.resetTransform();
+      if(zoomRef.current.state.scale===options.minScale)
+        zoomRef.current.centerView();
+      console.log("alignCanvasToCenter -> zoomRef.current", zoomRef.current)
     }
   };
   useEffect(() => {
-    console.log("ZoomImageViewer -> mosaicCanvasData", mosaicCanvasData.length);
+    if (!mosaicCanvasData || !mosaicCanvasData.length)
+      console.log("ZoomImageViewer -> mosaicCanvasData", mosaicCanvasData.length);
     let la = true;
 
     const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt, onComplete) => {
@@ -126,17 +143,21 @@ const ZoomImageViewer = (props) => {
         });
       };
       loadImagesArray(mosaicDataChunks[0]);
-
-    
     };
-    
+
     drawTilesInCanvas(mosaicCanvasData, canvasSize.x, canvasSize.y);
     setTimeout(() => {
       alignCanvasToCenter();
-    }, 500);
+    }, 100);
 
     setLoading(false);
     if (handleOnImageLoad) handleOnImageLoad();
+
+    if (zoomRef && zoomRef.current) {
+      zoomRef.current.zoomIn({step:10, 
+        animationTime:2000});
+      //zoomRef.current.resetTransform();
+    }
 
     return () => {
       la = false;
@@ -167,17 +188,20 @@ const ZoomImageViewer = (props) => {
           initialScale={currentZoom}
           initialPositionX={0}
           initialPositionY={0}
+          doubleClick={doubleClick}  
+          // zoomAnimation= {{
+          //   disabled:true,
+          //   size:0.1,
+          //   animationTime: 1000}
+          // }
+          onChange={(newPositionX, newPositionY, newZoom) => console.log(newPositionX, newPositionY, newZoom)}
+     
         >
           {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
             <React.Fragment>
-              {/* <div className="tools">
-                <button onClick={() => zoomIn()}>+</button>
-                <button onClick={() => zoomOut()}>-</button>
-                <button onClick={() => resetTransform()}>x</button>
-              </div> */}
-
               <div className="tools">
                 <Button
+                  title="Zoom In"
                   type="primary"
                   shape="circle"
                   icon={<ZoomInOutlined />}
@@ -185,6 +209,7 @@ const ZoomImageViewer = (props) => {
                   onClick={() => zoomIn()}
                 />
                 <Button
+                  title="Zoom Out"
                   type="primary"
                   shape="circle"
                   icon={<ZoomOutOutlined />}
@@ -192,6 +217,7 @@ const ZoomImageViewer = (props) => {
                   onClick={() => zoomOut()}
                 />
                 <Button
+                  title="Reset"
                   type="primary"
                   shape="circle"
                   icon={<ReloadOutlined />}

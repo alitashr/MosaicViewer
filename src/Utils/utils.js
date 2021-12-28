@@ -79,23 +79,23 @@ export const uploadDesign = (doubleTile, filename, width, height, callback, oner
   request.send(data);
 };
 
-export const getDefaultMosaicData = (defaultMosaicName, callback, onerror) => {
-  const data = new FormData();
-  data.append("mode", defaultMosaicName);
-  var request = new XMLHttpRequest();
-  request.onreadystatechange = function () {
-    if (request.readyState === 4) {
-      if (callback) callback(request.response);
-    }
-  };
-  request.open("POST", domain, true);
-  request.onerror = function () {
-    console.log("** An error occurred during the transaction");
-    if (onerror) onerror();
-  };
-  request.responseType = "text";
-  request.send(data);
-};
+// export const getDefaultMosaicData = (defaultMosaicName, callback, onerror) => {
+//   const data = new FormData();
+//   data.append("mode", defaultMosaicName);
+//   var request = new XMLHttpRequest();
+//   request.onreadystatechange = function () {
+//     if (request.readyState === 4) {
+//       if (callback) callback(request.response);
+//     }
+//   };
+//   request.open("POST", domain, true);
+//   request.onerror = function () {
+//     console.log("** An error occurred during the transaction");
+//     if (onerror) onerror();
+//   };
+//   request.responseType = "text";
+//   request.send(data);
+// };
 
 export const downloadImageData = (canvas, name, mime) => {
   const mimetype = mime === "jpg" ? "jpeg" : mime;

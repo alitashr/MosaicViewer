@@ -1,45 +1,61 @@
-import { Button } from "antd";
-import React, { useEffect, useState } from "react";
-import { downloadImageData, getDefaultMosaicData, getFilename, getResizedFile, uploadDesign } from "../../Utils/utils";
+import { Button, notification } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { useFullscreen, useToggle } from "react-use";
+import { downloadImageData, getFilename, getResizedFile, uploadDesign } from "../../Utils/utils";
 import ImageDropContainer from "../ImageDropContainer";
 import Spinner from "../Spinner";
 import ZoomImageViewer from "../Zoom-Image-Viewer";
 
+import Fullscreen from "../Fullscreen";
 const MainPage = () => {
   const [mosaicCanvasData, setMosaicCanvasData] = useState(null);
   const [inputImage, setInputImage] = useState(null);
-  // const [overlayImage, setOverlayImage] = useState(null);
   const [canvasSize, setCanvasSize] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(true);
   const [mosaicLoadComplete, setMosaicLoadComplete] = useState(false);
   const [mosaicFilename, setMosaicFilename] = useState("");
-  const alpha = 0.88
+  const alpha = 0.88;
+  const minImageSizeRequired = 6000;
+  const [isFullScreen, toggleFullscreen] = useToggle(false);
+  const refMosaicPage = useRef(null);
+  useFullscreen(refMosaicPage, isFullScreen, { onClose: () => toggleFullscreen(false) });
+
   useEffect(() => {
     setLoading(true);
     loadDefaultMosaic();
   }, []);
 
+  const openNotification = ({ type, placement }) => {
+    notification[type]({
+      message: `Couldn't process this image.`,
+      description: "Please try another one.",
+      placement,
+    });
+  };
+
   const loadDefaultMosaic = () => {
     setMosaicLoadComplete(false);
     var defaultImage = new Image(); // Creates image object
-    defaultImage.src = "https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
+    defaultImage.src = "https://images.explorug.com/mosaic/landscapeScene1.jpg"; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
     defaultImage.crossOrigin = "Anonymous";
 
     defaultImage.onload = function () {
       setCanvasSizeFromImage(defaultImage.width, defaultImage.height);
       setInputImage(defaultImage);
+      setMosaicCanvasData(1);
+      defaultImage.onload = null;
     };
 
-    getDefaultMosaicData(
-      "monalisa",
-      function (res) {
-        const monalisaMosaicData = JSON.parse(res);
-        setMosaicCanvasData(monalisaMosaicData);
-      },
-      function () {
-        console.log("error while getting default data");
-      }
-    );
+    // getDefaultMosaicData(
+    //   "monalisa",
+    //   function (res) {
+    //     const monalisaMosaicData = JSON.parse(res);
+    //     setMosaicCanvasData(monalisaMosaicData);
+    //   },
+    //   function () {
+    //     console.log("error while getting default data");
+    //   }
+    // );
   };
 
   const setCanvasSizeFromImage = (wid, hgt) => {
@@ -67,7 +83,7 @@ const MainPage = () => {
       myImage.onload = function (ev) {
         var inputImageWid = myImage.width;
         var inputImageHgt = myImage.height;
-        inputImageWid = inputImageWid < 4000 ? 4000 : inputImageWid;
+        inputImageWid = inputImageWid < minImageSizeRequired ? minImageSizeRequired : inputImageWid;
         inputImageHgt = (myImage.height / myImage.width) * inputImageWid;
 
         console.timeLog();
@@ -89,9 +105,12 @@ const MainPage = () => {
             //console.log("res", res);
             console.timeLog();
 
-            if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
+            if (res && res.toLowerCase() === "invalid") {
+              openNotification({ type: "warning", placement: "bottomLeft" });
+              setLoading(false);
+            } else if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
               const mosaicData = JSON.parse(res);
-              //draw pixellated image on transformComponentCanvas start 
+              //draw pixellated image on transformComponentCanvas start
               // var pixellatedImage = new Image();
               // pixellatedImage.src = pixellatedImageData;
               // pixellatedImage.onload = function () {
@@ -113,9 +132,8 @@ const MainPage = () => {
               //     overlayPixellatedCanvas.height
               //   );
               // };
-              
-              //draw pixellated image on transformComponentCanvas end
 
+              //draw pixellated image on transformComponentCanvas end
 
               setInputImage(myImage);
               setMosaicCanvasData(mosaicData);
@@ -160,8 +178,24 @@ const MainPage = () => {
     downloadImageData(downloadCanvas, `${filename}-mosaic.jpg`, "jpg");
   };
 
+  const handleFullScreen = () => {
+    let fcDelay = 1000;
+    if (!isFullScreen) {
+      fcDelay = 0;
+    }
+    if (isFullScreen) {
+      fcDelay = 0;
+    }
+    if (document.body.requestFullscreen) {
+      setTimeout(() => {
+        toggleFullscreen();
+      }, fcDelay);
+    } else {
+      toggleFullscreen();
+    }
+  };
   return (
-    <>
+    <div ref={refMosaicPage}>
       {inputImage && mosaicCanvasData && (
         <ZoomImageViewer
           mosaicCanvasData={mosaicCanvasData}
@@ -179,10 +213,13 @@ const MainPage = () => {
       </Button>
 
       {loading && <Spinner />}
+
+      <Fullscreen isFullScreen={isFullScreen} handleFullScreen={handleFullScreen} />
+
       <div id="canvasArea">
         <canvas id="mosaicCanvas"></canvas>
       </div>
-    </>
+    </div>
   );
 };
 

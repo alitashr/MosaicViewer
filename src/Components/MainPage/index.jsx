@@ -8,11 +8,12 @@ import ZoomImageViewer from "../Zoom-Image-Viewer";
 const MainPage = () => {
   const [mosaicCanvasData, setMosaicCanvasData] = useState(null);
   const [inputImage, setInputImage] = useState(null);
+  // const [overlayImage, setOverlayImage] = useState(null);
   const [canvasSize, setCanvasSize] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(true);
   const [mosaicLoadComplete, setMosaicLoadComplete] = useState(false);
-
   const [mosaicFilename, setMosaicFilename] = useState("");
+  const alpha = 0.88
   useEffect(() => {
     setLoading(true);
     loadDefaultMosaic();
@@ -66,12 +67,18 @@ const MainPage = () => {
       myImage.onload = function (ev) {
         var inputImageWid = myImage.width;
         var inputImageHgt = myImage.height;
-        inputImageWid = inputImageWid<4000 ? 4000: inputImageWid;
-        inputImageHgt = myImage.height/myImage.width * inputImageWid;
+        inputImageWid = inputImageWid < 4000 ? 4000 : inputImageWid;
+        inputImageHgt = (myImage.height / myImage.width) * inputImageWid;
 
         console.timeLog();
         setCanvasSizeFromImage(inputImageWid, inputImageHgt);
-        var doubleTileFile = getResizedFile(myImage, inputImageWid, inputImageHgt, fileType, true);
+        var { doubleTileFile, pixellatedImageData } = getResizedFile(
+          myImage,
+          inputImageWid,
+          inputImageHgt,
+          fileType,
+          true
+        );
         myImage.onload = null;
         uploadDesign(
           doubleTileFile,
@@ -83,8 +90,33 @@ const MainPage = () => {
             console.timeLog();
 
             if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
-              //sessionStorage.setItem("res", res);
               const mosaicData = JSON.parse(res);
+              //draw pixellated image on transformComponentCanvas start 
+              // var pixellatedImage = new Image();
+              // pixellatedImage.src = pixellatedImageData;
+              // pixellatedImage.onload = function () {
+              //   pixellatedImage.onload = null;
+              //   var overlayPixellatedCanvas = document.getElementById("transformComponentCanvas");
+              //   var overlayPixellatedContext = overlayPixellatedCanvas.getContext("2d");
+              //   overlayPixellatedContext.clearRect(0, 0, overlayPixellatedCanvas.width, overlayPixellatedCanvas.height);
+              //   pixellatedImage.crossOrigin = "Anonymous";
+              //   overlayPixellatedCanvas.width = canvasSize.x; //inputImage.width;
+              //   overlayPixellatedCanvas.height = canvasSize.y; // inputImage.height;
+              //   overlayPixellatedContext.imageSmoothingEnabled = false;
+              //   overlayPixellatedContext.globalAlpha = 0.5;
+
+              //   overlayPixellatedContext.drawImage(
+              //     pixellatedImage,
+              //     0,
+              //     0,
+              //     overlayPixellatedCanvas.width,
+              //     overlayPixellatedCanvas.height
+              //   );
+              // };
+              
+              //draw pixellated image on transformComponentCanvas end
+
+
               setInputImage(myImage);
               setMosaicCanvasData(mosaicData);
             } else {
@@ -119,7 +151,7 @@ const MainPage = () => {
     downloadCanvasContext.drawImage(mosaicCanvas, 0, 0, downloadCanvas.width, downloadCanvas.height);
 
     var imageCanvas = document.getElementById("transformComponentCanvas");
-    downloadCanvasContext.globalAlpha = 0.88;
+    downloadCanvasContext.globalAlpha = alpha;
     downloadCanvasContext.drawImage(imageCanvas, 0, 0, imageCanvas.width, imageCanvas.height);
     const filename =
       mosaicFilename && mosaicFilename != ""
@@ -137,6 +169,7 @@ const MainPage = () => {
           canvasSize={canvasSize}
           handleOnLoadComplete={handleOnLoadComplete}
           handleOnImageLoad={handleOnImageLoad}
+          alpha={alpha}
         ></ZoomImageViewer>
       )}
 

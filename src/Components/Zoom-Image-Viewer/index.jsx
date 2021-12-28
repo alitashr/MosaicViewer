@@ -17,7 +17,7 @@ const zoomOut = {
 };
 
 const ZoomImageViewer = (props) => {
-  const { imageSrc, mosaicCanvasData, inputImage, canvasSize, handleOnLoadComplete, handleOnImageLoad } = props;
+  const { imageSrc, mosaicCanvasData, inputImage, canvasSize, handleOnLoadComplete, handleOnImageLoad, alpha=0.88 } = props;
   const windowSize = useWindowSize();
   const [currentZoom, setCurrentZoom] = useState(1);
 
@@ -59,7 +59,6 @@ const ZoomImageViewer = (props) => {
   const alignCanvasToCenter = () => {
     if (zoomRef && zoomRef.current) {
       zoomRef.current.centerView();
-
       //zoomRef.current.resetTransform();
     }
   };
@@ -76,7 +75,7 @@ const ZoomImageViewer = (props) => {
       imageCanvas.height = canvasHgt;
       var tileCount = 0;
       setLoadingPercentage(0);
-      imageCanvasContext.globalAlpha = 0.88;
+      imageCanvasContext.globalAlpha = alpha;
       if (!la) return;
       function sliceIntoChunks(arr, chunkSize) {
         const res = [];
@@ -128,32 +127,9 @@ const ZoomImageViewer = (props) => {
       };
       loadImagesArray(mosaicDataChunks[0]);
 
-      // mosaicData.forEach((element, index) => {
-      //   var tileImage = new Image(); // Creates image object
-      //   tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
-      //   tileImage.crossOrigin = "Anonymous";
-      //   if (!la) return;
-      //   tileImage.onload = function (ev) {
-      //     if (!la) return;
-      //     if (tileCount === 1) {
-      //       if (onComplete) onComplete();
-      //     }
-      //     tileCount++;
-      //     const percent = Math.ceil((tileCount * 100) / mosaicData.length / 5) * 5;
-      //     setLoadingPercentage(percent);
-      //     if (!la) return;
-      //     imageCanvasContext.drawImage(tileImage, element.x, element.y, tileImage.width, tileImage.height);
-      //     if (tileCount === mosaicData.length - 1) {
-      //       console.timeLog();
-      //       setTimeout(() => {
-      //         setLoadingPercentage(0);
-      //       }, 1000);
-      //       if (handleOnLoadComplete) handleOnLoadComplete();
-      //     }
-      //   };
-      // });
+    
     };
-
+    
     drawTilesInCanvas(mosaicCanvasData, canvasSize.x, canvasSize.y);
     setTimeout(() => {
       alignCanvasToCenter();
@@ -177,6 +153,7 @@ const ZoomImageViewer = (props) => {
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
     setLoading(false);
   }, [inputImage]);
+
   return (
     <>
       <div className={classNames("at-zoom-image-viewer-transformwrapper", { hidden: loading })}>

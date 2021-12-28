@@ -10,6 +10,7 @@ export const getResizedFile = (image, inputImageWid, inputImageHgt, fileType, is
   const imageHeight = 240 * Math.ceil(inputImageHgt / 240);
   imageCanvas.width = (2 * imageWidth) / 30;
   imageCanvas.height = (2 * imageHeight) / 40;
+  //imageCanvasContext.imageSmoothingEnabled = false;
   imageCanvasContext.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
   //console.log("onImageChange -> imageCanvas.width, imageCanvas.height", imageCanvas.width, imageCanvas.height);
   let imgData = imageCanvas.toDataURL(fileType, 0.75);
@@ -22,7 +23,7 @@ export const getResizedFile = (image, inputImageWid, inputImageHgt, fileType, is
   }
   var file = new Blob([new Uint8Array(array)], { type: "image/png" });
 
-  return file;
+  return { doubleTileFile: file, pixellatedImageData: imgData };
 };
 
 export const getFilename = (name) => {

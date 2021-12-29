@@ -1,5 +1,5 @@
 export const mainDomain = "http://192.168.1.136/";//"https://lab.explorug.com/";
-export const imageDomain = "https://images.explorug.com/";
+export const imageDomain = "https://images.explorug.com/"; //"http://192.168.1.136/";
 export const domain = mainDomain + "Photomosaic/Default.aspx"; //"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
 
 export const getResizedFile = (image, inputImageWid, inputImageHgt, fileType, isDoubletile = false) => {

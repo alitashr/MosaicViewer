@@ -13,6 +13,8 @@ const MainPage = () => {
   const [canvasSize, setCanvasSize] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(true);
   const [mosaicLoadComplete, setMosaicLoadComplete] = useState(false);
+  const defaultImageUrl = "https://images.explorug.com/mosaic/landscapeScene1.jpg";
+
   const [mosaicFilename, setMosaicFilename] = useState("");
   const alpha = 0.88;
   const minImageSizeRequired = 6000;
@@ -22,28 +24,40 @@ const MainPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    loadDefaultMosaic();
+    loadDefaultMosaic({ imageUrl: defaultImageUrl });
   }, []);
 
-  const openNotification = ({ type, placement }) => {
+  const openNotification = ({ type = "warning", placement = "bottomLeft", message, description }) => {
+    (message = message ? message : `Couldn't process this image.`),
+      (description = description ? description : "Please try another one.");
     notification[type]({
-      message: `Couldn't process this image.`,
-      description: "Please try another one.",
+      message: message,
+      description: description,
       placement,
     });
   };
 
-  const loadDefaultMosaic = () => {
+  const loadDefaultMosaic = ({ imageUrl = defaultImageUrl }) => {
     setMosaicLoadComplete(false);
     var defaultImage = new Image(); // Creates image object
-    defaultImage.src = "https://images.explorug.com/mosaic/landscapeScene1.jpg"; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
+    defaultImage.src = imageUrl; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
     defaultImage.crossOrigin = "Anonymous";
 
     defaultImage.onload = function () {
       setCanvasSizeFromImage(defaultImage.width, defaultImage.height);
-      setInputImage(defaultImage);
-      setMosaicCanvasData(1);
+      if (defaultImage !== inputImage) {
+        setInputImage(defaultImage);
+        setMosaicCanvasData(1);
+      } else {
+        setLoading(false);
+      }
       defaultImage.onload = null;
+    };
+    defaultImage.onerror = function () {
+      if (imageUrl !== "./images/MonalisaMosaic.jpg") loadDefaultMosaic({ imageUrl: "./images/MonalisaMosaic.jpg" });
+      else {
+        openNotification = { message: "Couldn't load default image", description: "Please refresh" };
+      }
     };
 
     // getDefaultMosaicData(
@@ -138,15 +152,26 @@ const MainPage = () => {
               setInputImage(myImage);
               setMosaicCanvasData(mosaicData);
             } else {
+              openNotification = {
+                message: "Couldn't process your image",
+                description: "Please check your internet connection and try again",
+              };
               console.log("response is not json");
               setLoading(false);
             }
           },
           function () {
             console.log("Error while uploading image");
+            openNotification = {
+              message: "Error while uploading image",
+              description: "Please check your internet connection and try again",
+            };
             setLoading(false);
           }
         );
+      };
+      myImage.onerror = function () {
+        openNotification = { message: "Couldn't upload the file", description: "Please try again" };
       };
     };
   };
@@ -171,10 +196,8 @@ const MainPage = () => {
     var imageCanvas = document.getElementById("transformComponentCanvas");
     downloadCanvasContext.globalAlpha = alpha;
     downloadCanvasContext.drawImage(imageCanvas, 0, 0, imageCanvas.width, imageCanvas.height);
-    const filename =
-      mosaicFilename && mosaicFilename != ""
-        ? mosaicFilename.substring(0, mosaicFilename.lastIndexOf("."))
-        : "MonalisaMosaic";
+    const file = mosaicFilename && mosaicFilename != "" ? mosaicFilename : "Default."; //defaultImageUrl.split('/').pop();
+    const filename = file.substring(0, file.lastIndexOf("."));
     downloadImageData(downloadCanvas, `${filename}-mosaic.jpg`, "jpg");
   };
 
@@ -204,13 +227,14 @@ const MainPage = () => {
           handleOnLoadComplete={handleOnLoadComplete}
           handleOnImageLoad={handleOnImageLoad}
           alpha={alpha}
+          handleDownload={downloadMosaic}
         ></ZoomImageViewer>
       )}
 
       <ImageDropContainer onImageChange={handleImageChange} />
-      <Button disabled={loading} type="primary" className="download-button" onClick={downloadMosaic}>
+      {/* <Button disabled={loading} type="primary" className="download-button" onClick={downloadMosaic}>
         Download Image
-      </Button>
+      </Button> */}
 
       {loading && <Spinner />}
 

@@ -2,7 +2,7 @@ import classNames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 import { useWindowSize } from "react-use";
 import { Button } from "antd";
-import { ZoomInOutlined, ZoomOutOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ZoomInOutlined, ZoomOutOutlined, ReloadOutlined, DownloadOutlined } from "@ant-design/icons";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { imageDomain } from "../../Utils/utils";
 const wheel = {
@@ -11,14 +11,14 @@ const wheel = {
 };
 const zoomIn = {
   step: 0.1,
-  animationTime:2000
+  animationTime: 2000,
 };
 const zoomOut = {
   step: 0.1,
 };
 const doubleClick = {
   step: 0.5,
-  animationTime:300
+  animationTime: 300,
 };
 
 const ZoomImageViewer = (props) => {
@@ -30,6 +30,7 @@ const ZoomImageViewer = (props) => {
     handleOnLoadComplete,
     handleOnImageLoad,
     alpha = 0.88,
+    handleDownload,
   } = props;
   const windowSize = useWindowSize();
   const [currentZoom, setCurrentZoom] = useState(1);
@@ -45,7 +46,6 @@ const ZoomImageViewer = (props) => {
     maxScale: 12,
     limitToBounds: true,
     initialScale: currentZoom,
-    
   };
   useEffect(() => {
     const image = new Image();
@@ -67,15 +67,13 @@ const ZoomImageViewer = (props) => {
   }, [imageSrc]);
 
   useEffect(() => {
-
     alignCanvasToCenter();
   }, [windowSize]);
 
   const alignCanvasToCenter = () => {
     if (zoomRef && zoomRef.current) {
-      if(zoomRef.current.state.scale===options.minScale)
-        zoomRef.current.centerView();
-      console.log("alignCanvasToCenter -> zoomRef.current", zoomRef.current)
+      if (zoomRef.current.state.scale === options.minScale) zoomRef.current.centerView();
+      console.log("alignCanvasToCenter -> zoomRef.current", zoomRef.current);
     }
   };
   useEffect(() => {
@@ -154,8 +152,7 @@ const ZoomImageViewer = (props) => {
     if (handleOnImageLoad) handleOnImageLoad();
 
     if (zoomRef && zoomRef.current) {
-      zoomRef.current.zoomIn({step:10, 
-        animationTime:2000});
+      zoomRef.current.zoomIn({ step: 10, animationTime: 2000 });
       //zoomRef.current.resetTransform();
     }
 
@@ -188,14 +185,13 @@ const ZoomImageViewer = (props) => {
           initialScale={currentZoom}
           initialPositionX={0}
           initialPositionY={0}
-          doubleClick={doubleClick}  
+          doubleClick={doubleClick}
           // zoomAnimation= {{
           //   disabled:true,
           //   size:0.1,
           //   animationTime: 1000}
           // }
           onChange={(newPositionX, newPositionY, newZoom) => console.log(newPositionX, newPositionY, newZoom)}
-     
         >
           {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
             <React.Fragment>
@@ -224,6 +220,16 @@ const ZoomImageViewer = (props) => {
                   size={"large"}
                   onClick={() => resetTransform()}
                 />
+                {handleDownload && (
+                  <Button
+                    title="Download this Photo Mosaic"
+                    type="primary"
+                    shape="circle"
+                    icon={<DownloadOutlined />}
+                    size={"large"}
+                    onClick={() => handleDownload()}
+                  />
+                )}
               </div>
 
               <TransformComponent ref={reloadRef}>

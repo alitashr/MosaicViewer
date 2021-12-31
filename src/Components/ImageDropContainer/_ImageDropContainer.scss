@@ -1,4 +1,3 @@
-
 #imageDropContainer {
   position: absolute;
   height: var(--drop-container-height);
@@ -6,7 +5,7 @@
   bottom: 1rem;
   left: 2rem;
   border: 2px dashed #ccc;
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   width: 45rem;
   font-family: sans-serif;
   background: rgba(255, 255, 255, 0.7);
@@ -14,11 +13,11 @@
   align-items: center;
   display: flex;
   margin: auto;
-  right:0;
+  right: 0;
   max-width: 40vw;
 }
 #imageDropContainer.highlight {
-  border-color: var(--active-color);;
+  border-color: var(--active-color);
 }
 .inputArea {
   width: 80%;
@@ -36,14 +35,20 @@ div#inputSubmit {
 }
 
 .custom-file-label {
-  cursor: pointer; 
-  color: #333;   font-size: 1.2em;
+  cursor: pointer;
+  color: #333;
+  font-size: 1.2em;
 }
 div#errorMessage {
   font-size: 0.75em;
   color: #555;
 }
 #uploadMessage {
-  font-size: 1.2rem;
-    color: #555;
+  font-size: 15px;
+  color: #555;
+  font-weight: 400;
+}
+.custom-file-title {
+  text-transform: uppercase;
+  font-weight: 400;
 }

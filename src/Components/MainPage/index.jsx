@@ -1,6 +1,6 @@
 import { Button, notification } from "antd";
 import React, { useEffect, useRef, useState } from "react";
-import { useFullscreen, useToggle } from "react-use";
+import { useFullscreen, useMount, useToggle } from "react-use";
 import { downloadImageData, getFilename, getResizedFile, uploadDesign } from "../../Utils/utils";
 import ImageDropContainer from "../ImageDropContainer";
 import Spinner from "../Spinner";
@@ -21,7 +21,22 @@ const MainPage = () => {
   const [isFullScreen, toggleFullscreen] = useToggle(false);
   const refMosaicPage = useRef(null);
   useFullscreen(refMosaicPage, isFullScreen, { onClose: () => toggleFullscreen(false) });
+  useMount(() => {
+    const onWindowMessage = async (e) => {
+      if (e.origin === window.location.origin) return;
+      const { imageFile } = e.data;
+      if(imageFile){
+        console.log("imageFile received on WindowMessage")
+        handleImageChange(imageFile);
+      }
 
+    };
+    window.addEventListener("message", onWindowMessage);
+
+    return () => {
+      window.removeEventListener("message", onWindowMessage);
+    };
+  });
   useEffect(() => {
     setLoading(true);
     loadDefaultMosaic({ imageUrl: defaultImageUrl });
@@ -59,17 +74,6 @@ const MainPage = () => {
         openNotification = { message: "Couldn't load default image", description: "Please refresh" };
       }
     };
-
-    // getDefaultMosaicData(
-    //   "monalisa",
-    //   function (res) {
-    //     const monalisaMosaicData = JSON.parse(res);
-    //     setMosaicCanvasData(monalisaMosaicData);
-    //   },
-    //   function () {
-    //     console.log("error while getting default data");
-    //   }
-    // );
   };
 
   const setCanvasSizeFromImage = (wid, hgt) => {

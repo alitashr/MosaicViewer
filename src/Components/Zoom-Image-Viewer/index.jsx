@@ -115,7 +115,7 @@ const ZoomImageViewer = (props) => {
         if (!la) return;
         mosaicDataArr.forEach((element, index) => {
           var tileImage = new Image(); // Creates image object
-          tileImage.src = imageDomain + "mosaic/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
+          tileImage.src = imageDomain + "mosaic/NewSet/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
           tileImage.crossOrigin = "Anonymous";
           if (!la) return;
           tileImage.onload = function (ev) {

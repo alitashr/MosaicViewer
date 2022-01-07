@@ -38,16 +38,10 @@ div#canvasArea {
   & > .slick-slider {
     max-width: 100%;
     max-height: calc(100vh - 0.5rem);
-
     &.mosaic-carousel {
-      // display: flex;
       align-items: center;
     }
   }
-  // .slick-list {
-  //   height: 100%;
-  //   width: auto;
-  // }
   & .slick-dots li {
     width: 2.5rem;
     height: 1rem;
@@ -55,8 +49,11 @@ div#canvasArea {
       width: 4rem;
     }
   }
-  ul.slick-dots.slick-dots-top.mosaic-dots > li > button {
-    height: 0.75rem;
+  ul.slick-dots.slick-dots-top.mosaic-dots {
+    display: none !important;
+    & > li > button {
+      height: 0.75rem;
+    }
   }
   .slick-slide img {
     align-self: center;

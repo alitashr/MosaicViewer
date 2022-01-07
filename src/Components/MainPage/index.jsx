@@ -61,7 +61,6 @@ const MainPage = () => {
     };
   });
   useEffect(() => {
-    console.log('set loading true');
     setLoading(true);
     const defaultImageUrl_ = `${defaultImagePath}${defaultImagesOptions[carouselCurrentIndex]}`;
     loadFirstImage({ imageUrl: defaultImageUrl_ });
@@ -70,21 +69,6 @@ const MainPage = () => {
   const loadFirstImage = ({ imageUrl = defaultImageUrl }) => {
     setMosaicCanvasData(1);
     setCanvasSizeFromImage(defaultImageSize.width, defaultImageSize.height);
-
-    // var defaultImage = new Image(); // Creates image object
-    // defaultImage.src = imageUrl; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
-    // defaultImage.crossOrigin = "Anonymous";
-
-    // defaultImage.onload = function () {
-    //   setCanvasSizeFromImage(defaultImage.width, defaultImage.height);
-    //   console.log("loadFirstImage -> defaultImage.width, defaultImage.height", defaultImage.width, defaultImage.height)
-    //   setMosaicCanvasData(1);
-    //   setLoading(false);
-    //   defaultImage.onload = null;
-    // };
-    // defaultImage.onerror = function () {
-    //   openNotification = { message: "Couldn't load default image", description: "Please refresh" };
-    // };
   };
   const openNotification = ({ type = "warning", placement = "bottomLeft", message, description }) => {
     (message = message ? message : `Couldn't process this image.`),
@@ -290,7 +274,6 @@ const MainPage = () => {
   };
   const CarouselElem = (
     <Carousel
-      // autoplay
       autoplaySpeed={4000}
       ref={refCarousel}
       dots={{ className: "mosaic-dots" }}

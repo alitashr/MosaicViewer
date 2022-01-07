@@ -24,12 +24,12 @@ const MainPage = () => {
   useMount(() => {
     const onWindowMessage = async (e) => {
       if (e.origin === window.location.origin) return;
-      const { imageFile } = e.data;
-      if(imageFile){
-        console.log("imageFile received on WindowMessage")
-        handleImageChange(imageFile);
-      }
-
+      const { imageData, filename, fileType } = e.data;
+      // if(imageFile){
+      //   handleImageChange(imageFile);
+      // }
+      if (imageData && filename && fileType) loadImage({ imageData, filename, fileType });
+      else console.log("could not get imageData ilename and filetype from message");
     };
     window.addEventListener("message", onWindowMessage);
 
@@ -92,91 +92,102 @@ const MainPage = () => {
     var reader = new FileReader();
     reader.readAsDataURL(imageFile);
     reader.onloadend = function (e) {
-      console.timeLog();
-      var myImage = new Image();
-      myImage.src = e.target.result;
       let filename = getFilename(imageFile.name);
-      setMosaicFilename(filename);
       let fileType = imageFile.type;
-      myImage.onload = function (ev) {
-        var inputImageWid = myImage.width;
-        var inputImageHgt = myImage.height;
-        inputImageWid = inputImageWid < minImageSizeRequired ? minImageSizeRequired : inputImageWid;
-        inputImageHgt = (myImage.height / myImage.width) * inputImageWid;
+      loadImage({ imageData: e.target.result, filename, fileType });
+    };
+  };
+  const loadImage = ({ imageData, filename, fileType }) => {
+    console.timeLog();
 
-        console.timeLog();
-        setCanvasSizeFromImage(inputImageWid, inputImageHgt);
-        var { doubleTileFile, pixellatedImageData } = getResizedFile(
-          myImage,
-          inputImageWid,
-          inputImageHgt,
-          fileType,
-          true
-        );
-        myImage.onload = null;
-        uploadDesign(
-          doubleTileFile,
-          filename,
-          inputImageWid,
-          inputImageHgt,
-          function (res) {
-            //console.log("res", res);
-            console.timeLog();
+    var myImage = new Image();
+    myImage.src = imageData;
+    setMosaicFilename(filename);
+    myImage.onload = function (ev) {
+      var inputImageWid = myImage.width;
+      var inputImageHgt = myImage.height;
+      var smallerValue = Math.min(inputImageWid, inputImageHgt);
+      if (smallerValue < minImageSizeRequired) {
+        if (smallerValue === inputImageWid) {
+          inputImageWid = minImageSizeRequired;
+          inputImageHgt = (myImage.height / myImage.width) * inputImageWid;
+        } else {
+          inputImageHgt = minImageSizeRequired;
+          inputImageWid = (myImage.width / myImage.height) * inputImageHgt;
+        }
+      }
+      console.timeLog();
+      setCanvasSizeFromImage(inputImageWid, inputImageHgt);
+      var { doubleTileFile, pixellatedImageData } = getResizedFile(
+        myImage,
+        inputImageWid,
+        inputImageHgt,
+        fileType,
+        true
+      );
+      myImage.onload = null;
+      uploadDesign(
+        doubleTileFile,
+        filename,
+        inputImageWid,
+        inputImageHgt,
+        function (res) {
+          //console.log("res", res);
+          console.timeLog();
 
-            if (res && res.toLowerCase() === "invalid") {
-              openNotification({ type: "warning", placement: "bottomLeft" });
-              setLoading(false);
-            } else if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
-              const mosaicData = JSON.parse(res);
-              //draw pixellated image on transformComponentCanvas start
-              // var pixellatedImage = new Image();
-              // pixellatedImage.src = pixellatedImageData;
-              // pixellatedImage.onload = function () {
-              //   pixellatedImage.onload = null;
-              //   var overlayPixellatedCanvas = document.getElementById("transformComponentCanvas");
-              //   var overlayPixellatedContext = overlayPixellatedCanvas.getContext("2d");
-              //   overlayPixellatedContext.clearRect(0, 0, overlayPixellatedCanvas.width, overlayPixellatedCanvas.height);
-              //   pixellatedImage.crossOrigin = "Anonymous";
-              //   overlayPixellatedCanvas.width = canvasSize.x; //inputImage.width;
-              //   overlayPixellatedCanvas.height = canvasSize.y; // inputImage.height;
-              //   overlayPixellatedContext.imageSmoothingEnabled = false;
-              //   overlayPixellatedContext.globalAlpha = 0.5;
+          if (res && res.toLowerCase() === "invalid") {
+            openNotification({ type: "warning", placement: "bottomLeft" });
+            setLoading(false);
+          } else if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
+            const mosaicData = JSON.parse(res);
+            //draw pixellated image on transformComponentCanvas start
+            // var pixellatedImage = new Image();
+            // pixellatedImage.src = pixellatedImageData;
+            // pixellatedImage.onload = function () {
+            //   pixellatedImage.onload = null;
+            //   var overlayPixellatedCanvas = document.getElementById("transformComponentCanvas");
+            //   var overlayPixellatedContext = overlayPixellatedCanvas.getContext("2d");
+            //   overlayPixellatedContext.clearRect(0, 0, overlayPixellatedCanvas.width, overlayPixellatedCanvas.height);
+            //   pixellatedImage.crossOrigin = "Anonymous";
+            //   overlayPixellatedCanvas.width = canvasSize.x; //inputImage.width;
+            //   overlayPixellatedCanvas.height = canvasSize.y; // inputImage.height;
+            //   overlayPixellatedContext.imageSmoothingEnabled = false;
+            //   overlayPixellatedContext.globalAlpha = 0.5;
 
-              //   overlayPixellatedContext.drawImage(
-              //     pixellatedImage,
-              //     0,
-              //     0,
-              //     overlayPixellatedCanvas.width,
-              //     overlayPixellatedCanvas.height
-              //   );
-              // };
+            //   overlayPixellatedContext.drawImage(
+            //     pixellatedImage,
+            //     0,
+            //     0,
+            //     overlayPixellatedCanvas.width,
+            //     overlayPixellatedCanvas.height
+            //   );
+            // };
 
-              //draw pixellated image on transformComponentCanvas end
+            //draw pixellated image on transformComponentCanvas end
 
-              setInputImage(myImage);
-              setMosaicCanvasData(mosaicData);
-            } else {
-              openNotification = {
-                message: "Couldn't process your image",
-                description: "Please check your internet connection and try again",
-              };
-              console.log("response is not json");
-              setLoading(false);
-            }
-          },
-          function () {
-            console.log("Error while uploading image");
+            setInputImage(myImage);
+            setMosaicCanvasData(mosaicData);
+          } else {
             openNotification = {
-              message: "Error while uploading image",
+              message: "Couldn't process your image",
               description: "Please check your internet connection and try again",
             };
+            console.log("response is not json");
             setLoading(false);
           }
-        );
-      };
-      myImage.onerror = function () {
-        openNotification = { message: "Couldn't upload the file", description: "Please try again" };
-      };
+        },
+        function () {
+          console.log("Error while uploading image");
+          openNotification = {
+            message: "Error while uploading image",
+            description: "Please check your internet connection and try again",
+          };
+          setLoading(false);
+        }
+      );
+    };
+    myImage.onerror = function () {
+      openNotification = { message: "Couldn't upload the file", description: "Please try again" };
     };
   };
   const handleOnImageLoad = () => {

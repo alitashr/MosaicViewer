@@ -44,11 +44,21 @@ div#errorMessage {
   color: #555;
 }
 #uploadMessage {
-  font-size: 15px;
+  font-size: 1.3rem;
   color: #555;
   font-weight: 400;
 }
 .custom-file-title {
   text-transform: uppercase;
   font-weight: 400;
+  font-size: 1.5rem;
+}
+
+@media screen and (max-width: 1000px) {
+  #uploadMessage {
+    font-size: 1rem;
+  }
+  .custom-file-title {
+    font-size: 1.2rem;
+  }
 }

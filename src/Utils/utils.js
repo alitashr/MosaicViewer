@@ -1,6 +1,18 @@
+import Pako from "pako";
 export const mainDomain = "http://192.168.1.94/";//"https://lab.explorug.com/";
-export const imageDomain = "https://images.explorug.com/"; //"http://192.168.1.136/";
+export const imageDomain = "http://192.168.1.94/";//"https://images.explorug.com/"; //"http://192.168.1.136/";
 export const domain = mainDomain + "Photomosaic/Default.aspx"; //"https://lab.explorug.com/photomosaic/default.aspx";// "https://explorug.com/archanastools/PhotomosaicWeb/default.aspx";
+
+export const getFromSessionStorage = key => {
+  const item = sessionStorage.getItem(key);
+  if (item === "undefined") return undefined;
+  if (item === "null") return null;
+  try {
+    return JSON.parse(item);
+  } catch (error) {
+    return item;
+  }
+};
 
 export const getResizedFile = (image, inputImageWid, inputImageHgt, fileType, isDoubletile = false) => {
   var imageCanvas = document.createElement("canvas");
@@ -57,7 +69,56 @@ function dataURItoBlob(dataURI) {
   var blob = new Blob([ab], { type: mimeString });
   return blob;
 }
+function bytesToBase64(bytes) {
+  var binary = "";
+  var len = bytes.byteLength;
+  for (var i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
 
+function base64ToBytes(base64) {
+  var binary_string = window.atob(base64);
+  var len = binary_string.length;
+  var bytes = new Uint8Array(len);
+  for (var i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes;
+}
+
+export const decodeColorsFromString = str => {
+  try {
+    return safelyParseJSON(Pako.inflate(window.atob(str), { to: "string" }));
+  } catch (exception) {
+    console.error(exception);
+    return null;
+  }
+};
+
+export const encodeColorsToString = colors =>
+  window.btoa(Pako.deflate(JSON.stringify(colors), { to: "string" }));
+
+export const uncompressJSON = (str) => {
+  if (!str || str === "") return "";
+  return safelyParseJSON(pako.inflate((str), { to: "string" }));
+};
+
+// export const compressJSON = (data) => bytesToBase64(pako.deflate(JSON.stringify(data), { to: "string" }));
+export const compressJSON = (data) => (pako.deflate(JSON.stringify(data), { to: "string" }));
+
+export const safelyParseJSON = (json) => {
+  // This function cannot be optimised, it's best to
+  // keep it small!
+  let parsed;
+  try {
+    parsed = JSON.parse(json);
+  } catch (e) {
+    // Oh well, but whatever...
+  }
+  return parsed; // Could be undefined!
+};
 export const uploadDesign = (doubleTile, filename, width, height, callback, onerror) => {
   const data = new FormData();
   data.append("doubleTile", doubleTile);
@@ -120,4 +181,25 @@ export const downloadImageData = (canvas, name, mime) => {
   }
   const dataurl = canvas.toDataURL(type, 0.95);
   downloadBlob(dataURItoBlob(dataurl));
+};
+
+
+
+export const uploadInputFile = (file,connectionid, callback, onerror) => {
+  const data = new FormData();
+  data.append("file", file);
+  data.append("connectionid", connectionid);
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function () {
+    if (request.readyState === 4) {
+      if (callback) callback(request.response);
+    }
+  };
+  request.open("POST", 'http://192.168.1.94:32551/receivedata.aspx', true);
+  request.onerror = function () {
+    console.log("** An error occurred during the input file upload");
+    if (onerror) onerror();
+  };
+  request.responseType = "text";
+  request.send(data);
 };

@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 import { useWindowSize } from "react-use";
-import { Button } from "antd";
+import { Button, Carousel } from "antd";
 import { ZoomInOutlined, ZoomOutOutlined, ReloadOutlined, DownloadOutlined } from "@ant-design/icons";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { imageDomain } from "../../Utils/utils";
@@ -115,7 +115,7 @@ const ZoomImageViewer = (props) => {
         if (!la) return;
         mosaicDataArr.forEach((element, index) => {
           var tileImage = new Image(); // Creates image object
-          tileImage.src = imageDomain + "mosaic/NewSet/" + element.thumbnail; // "./images/1.sm.webp";//  Assigns converted image to image object
+          tileImage.src = imageDomain + "mosaic/" + element.thumbnail; //  "mosaic/NewSet2/"  //"./images/1.sm.webp";//  Assigns converted image to image object
           tileImage.crossOrigin = "Anonymous";
           if (!la) return;
           tileImage.onload = function (ev) {
@@ -171,6 +171,13 @@ const ZoomImageViewer = (props) => {
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
     setLoading(false);
   }, [inputImage]);
+  const contentStyle = {
+    height: "160px",
+    color: "#fff",
+    lineHeight: "160px",
+    textAlign: "center",
+    background: "#364d79",
+  };
 
   return (
     <>
@@ -237,6 +244,7 @@ const ZoomImageViewer = (props) => {
                   <img className="zoom-image" src={""} ref={imageRef} alt="test" crossOrigin="true" />
                 ) : (
                   <>
+                    
                     <canvas className="zoomTransformCanvas" id="inputMosaicImage" />
                     <canvas className="zoomTransformCanvas" id="transformComponentCanvas" />
                   </>

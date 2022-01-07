@@ -1,7 +1,10 @@
 import "./index.scss";
 import MainPage from "./Components/MainPage";
-import { BrowserRouter as Router, Switch, Route, Routes } from "react-router-dom";
+import { HashRouter as Router, Switch, Route, Routes } from "react-router-dom";
 import FileInputPage from "./Components/FileInputPage";
+import { useMount } from "react-use";
+import { Suspense } from "react";
+import { getFromSessionStorage } from "./Utils/utils";
 
 const routes = [
   {
@@ -16,17 +19,41 @@ const routes = [
   },
 ];
 function App() {
+  useMount(()=>{
+    const mode = getFromSessionStorage("mode");
 
+
+  });
+  const PageTorender = ()=>{
+    const mode = getFromSessionStorage("mode");
+    const connectionid = getFromSessionStorage("connectionid")||'';
+    
+    if(mode && mode.toLowerCase()==='input'){
+      return (
+        <Suspense fallback={<></>}>
+          <FileInputPage connectionid={connectionid} />
+        </Suspense>
+      );
+    }
+    else{
+      return (
+        <Suspense fallback={<></>}>
+          <MainPage />
+        </Suspense>
+      );
+    }
+  }
 
   return (
     <div className="App at-zoom-image-viewer">
-      <Router>
+      {PageTorender()}
+      {/* <Router>
         <Routes>
           {routes.map((route, index) => {
-            return <Route key={index} path={route.path} element={<route.component />} />;
+            return <Route exact key={index} path={route.path} element={<route.component />} />;
           })}
         </Routes>
-      </Router>
+      </Router> */}
     </div>
   );
 }

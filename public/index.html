@@ -36,5 +36,28 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+       function getJsonFromUrl(url) {
+        if (!url) url = window.location.search;
+        var query = url.substr(1);
+        var result = {};
+        query.split("&").forEach(function(part) {
+          var item = part.split("=");
+          result[item[0]] = decodeURIComponent(item[1]);
+        });
+        return result;
+      }
+      const  jsonUrl = getJsonFromUrl();
+      var mode,connectionid;
+      mode = jsonUrl.mode;
+      connectionid= jsonUrl.connectionid;
+      if(mode){
+        sessionStorage.setItem('mode', mode);
+      }
+      if(connectionid){
+        sessionStorage.setItem('connectionid', connectionid);
+      }
+      console.log("jsonUrl", jsonUrl)
+    </script>
   </body>
 </html>

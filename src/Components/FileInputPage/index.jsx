@@ -75,7 +75,7 @@ const FileInputPage = (props) => {
     console.log("imageFile received on WindowMessage");
     uploadInputFile(imageFile, connectionid, (res)=>{
     console.log("uploadInputFile -> res", res)
-      
+    window.parent.postMessage(res, "*");
     },
     (err)=>{
     console.log("onImageChange -> err", err)

@@ -1,35 +1,58 @@
-import { Button, notification } from "antd";
+import { Button, Carousel, notification } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useFullscreen, useMount, useToggle } from "react-use";
-import { downloadImageData, getFilename, getResizedFile, uploadDesign } from "../../Utils/utils";
+import { downloadImageData, getFilename, getResizedFile, shuffle, uploadDesign } from "../../Utils/utils";
 import ImageDropContainer from "../ImageDropContainer";
 import Spinner from "../Spinner";
 import ZoomImageViewer from "../Zoom-Image-Viewer";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import LazyLoad, { lazyload } from "react-lazyload";
 
 import Fullscreen from "../Fullscreen";
+import classNames from "classnames";
+
+let defaultImagesOptions = ["landscapeScene1.jpg", "potala.jpg", "hedge.jpg"];
+defaultImagesOptions = shuffle(defaultImagesOptions);
+let defaultImageSize = { width: 6120, height: 3442 };
+
 const MainPage = () => {
   const [mosaicCanvasData, setMosaicCanvasData] = useState(null);
   const [inputImage, setInputImage] = useState(null);
   const [canvasSize, setCanvasSize] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(true);
-  const [mosaicLoadComplete, setMosaicLoadComplete] = useState(false);
-  const defaultImageUrl = "https://images.explorug.com/mosaic/landscapeScene1.jpg";
+  const [showCarousel, setShowCarousel] = useState(true);
+  const [isCarouselFirstLoad, setIsCarouselFirstLoad] = useState(true);
 
+  const [carouselCurrentIndex, setCarouselCurrentIndex] = useState(0);
+
+  const defaultImageUrl = "https://images.explorug.com/mosaic/landscapeScene1.jpg";
+  const defaultImagePath = "https://images.explorug.com/mosaic/";
+ 
   const [mosaicFilename, setMosaicFilename] = useState("");
   const alpha = 0.88;
   const minImageSizeRequired = 6000;
   const [isFullScreen, toggleFullscreen] = useToggle(false);
   const refMosaicPage = useRef(null);
+  const refCarousel = useRef(null);
+  const zoomRef = useRef(null);
+
   useFullscreen(refMosaicPage, isFullScreen, { onClose: () => toggleFullscreen(false) });
   useMount(() => {
     const onWindowMessage = async (e) => {
       if (e.origin === window.location.origin) return;
-      const { imageData, filename, fileType } = e.data;
+      const imageUrl = e.data;
+      console.log("onWindowMessage -> imageUrl received from parent", imageUrl);
+      if (imageUrl) {
+        let filename = getFilename(imageUrl.split("/")[0]);
+        let fileType = filename.substring(filename.lastIndexOf(".") + 1, filename.length);
+        loadImage({ imageUrl: imageUrl, filename, fileType });
+      }
+      //const { imageData, filename, fileType } = e.data;
       // if(imageFile){
       //   handleImageChange(imageFile);
       // }
-      if (imageData && filename && fileType) loadImage({ imageData, filename, fileType });
-      else console.log("could not get imageData ilename and filetype from message");
+      // if (imageData && filename && fileType) loadImage({ imageData, filename, fileType });
+      // else console.log("could not get imageData ilename and filetype from message");
     };
     window.addEventListener("message", onWindowMessage);
 
@@ -38,10 +61,31 @@ const MainPage = () => {
     };
   });
   useEffect(() => {
+    console.log('set loading true');
     setLoading(true);
-    loadDefaultMosaic({ imageUrl: defaultImageUrl });
+    const defaultImageUrl_ = `${defaultImagePath}${defaultImagesOptions[carouselCurrentIndex]}`;
+    loadFirstImage({ imageUrl: defaultImageUrl_ });
   }, []);
 
+  const loadFirstImage = ({ imageUrl = defaultImageUrl }) => {
+    setMosaicCanvasData(1);
+    setCanvasSizeFromImage(defaultImageSize.width, defaultImageSize.height);
+
+    // var defaultImage = new Image(); // Creates image object
+    // defaultImage.src = imageUrl; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
+    // defaultImage.crossOrigin = "Anonymous";
+
+    // defaultImage.onload = function () {
+    //   setCanvasSizeFromImage(defaultImage.width, defaultImage.height);
+    //   console.log("loadFirstImage -> defaultImage.width, defaultImage.height", defaultImage.width, defaultImage.height)
+    //   setMosaicCanvasData(1);
+    //   setLoading(false);
+    //   defaultImage.onload = null;
+    // };
+    // defaultImage.onerror = function () {
+    //   openNotification = { message: "Couldn't load default image", description: "Please refresh" };
+    // };
+  };
   const openNotification = ({ type = "warning", placement = "bottomLeft", message, description }) => {
     (message = message ? message : `Couldn't process this image.`),
       (description = description ? description : "Please try another one.");
@@ -53,7 +97,6 @@ const MainPage = () => {
   };
 
   const loadDefaultMosaic = ({ imageUrl = defaultImageUrl }) => {
-    setMosaicLoadComplete(false);
     var defaultImage = new Image(); // Creates image object
     defaultImage.src = imageUrl; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
     defaultImage.crossOrigin = "Anonymous";
@@ -87,21 +130,20 @@ const MainPage = () => {
   const handleImageChange = (imageFile) => {
     if (!imageFile) return;
     setLoading(true);
-    setMosaicLoadComplete(false);
     console.time();
     var reader = new FileReader();
     reader.readAsDataURL(imageFile);
     reader.onloadend = function (e) {
       let filename = getFilename(imageFile.name);
       let fileType = imageFile.type;
-      loadImage({ imageData: e.target.result, filename, fileType });
+      loadImage({ imageUrl: e.target.result, filename, fileType });
     };
   };
-  const loadImage = ({ imageData, filename, fileType }) => {
+  const loadImage = ({ imageUrl, filename, fileType }) => {
     console.timeLog();
 
     var myImage = new Image();
-    myImage.src = imageData;
+    myImage.src = imageUrl;
     setMosaicFilename(filename);
     myImage.onload = function (ev) {
       var inputImageWid = myImage.width;
@@ -116,7 +158,6 @@ const MainPage = () => {
           inputImageWid = (myImage.width / myImage.height) * inputImageHgt;
         }
       }
-      console.timeLog();
       setCanvasSizeFromImage(inputImageWid, inputImageHgt);
       var { doubleTileFile, pixellatedImageData } = getResizedFile(
         myImage,
@@ -140,39 +181,15 @@ const MainPage = () => {
             setLoading(false);
           } else if (res && res !== "" && res !== "maxsize" && res[0] !== "<") {
             const mosaicData = JSON.parse(res);
-            //draw pixellated image on transformComponentCanvas start
-            // var pixellatedImage = new Image();
-            // pixellatedImage.src = pixellatedImageData;
-            // pixellatedImage.onload = function () {
-            //   pixellatedImage.onload = null;
-            //   var overlayPixellatedCanvas = document.getElementById("transformComponentCanvas");
-            //   var overlayPixellatedContext = overlayPixellatedCanvas.getContext("2d");
-            //   overlayPixellatedContext.clearRect(0, 0, overlayPixellatedCanvas.width, overlayPixellatedCanvas.height);
-            //   pixellatedImage.crossOrigin = "Anonymous";
-            //   overlayPixellatedCanvas.width = canvasSize.x; //inputImage.width;
-            //   overlayPixellatedCanvas.height = canvasSize.y; // inputImage.height;
-            //   overlayPixellatedContext.imageSmoothingEnabled = false;
-            //   overlayPixellatedContext.globalAlpha = 0.5;
-
-            //   overlayPixellatedContext.drawImage(
-            //     pixellatedImage,
-            //     0,
-            //     0,
-            //     overlayPixellatedCanvas.width,
-            //     overlayPixellatedCanvas.height
-            //   );
-            // };
-
-            //draw pixellated image on transformComponentCanvas end
 
             setInputImage(myImage);
+            setShowCarousel(false);
             setMosaicCanvasData(mosaicData);
           } else {
             openNotification = {
               message: "Couldn't process your image",
               description: "Please check your internet connection and try again",
             };
-            console.log("response is not json");
             setLoading(false);
           }
         },
@@ -191,29 +208,40 @@ const MainPage = () => {
     };
   };
   const handleOnImageLoad = () => {
-    console.log("handleOnImageLoad -> handleOnImageLoad");
     setLoading(false);
   };
   const handleOnLoadComplete = () => {
-    console.log("handleOnLoadComplete -> handleOnLoadComplete");
     setLoading(false);
-    setMosaicLoadComplete(true);
   };
   const downloadMosaic = () => {
     var downloadCanvas = document.createElement("canvas");
     var downloadCanvasContext = downloadCanvas.getContext("2d");
 
-    var mosaicCanvas = document.getElementById("inputMosaicImage");
-    downloadCanvas.width = mosaicCanvas.width;
-    downloadCanvas.height = mosaicCanvas.height;
-    downloadCanvasContext.drawImage(mosaicCanvas, 0, 0, downloadCanvas.width, downloadCanvas.height);
+    if (!showCarousel) {
+      var mosaicCanvas = document.getElementById("inputMosaicImage");
+      downloadCanvas.width = mosaicCanvas.width;
+      downloadCanvas.height = mosaicCanvas.height;
+      downloadCanvasContext.drawImage(mosaicCanvas, 0, 0, downloadCanvas.width, downloadCanvas.height);
 
-    var imageCanvas = document.getElementById("transformComponentCanvas");
-    downloadCanvasContext.globalAlpha = alpha;
-    downloadCanvasContext.drawImage(imageCanvas, 0, 0, imageCanvas.width, imageCanvas.height);
-    const file = mosaicFilename && mosaicFilename != "" ? mosaicFilename : "Default."; //defaultImageUrl.split('/').pop();
-    const filename = file.substring(0, file.lastIndexOf("."));
-    downloadImageData(downloadCanvas, `${filename}-mosaic.jpg`, "jpg");
+      var imageCanvas = document.getElementById("transformComponentCanvas");
+      downloadCanvasContext.globalAlpha = alpha;
+      downloadCanvasContext.drawImage(imageCanvas, 0, 0, imageCanvas.width, imageCanvas.height);
+      const file = mosaicFilename && mosaicFilename != "" ? mosaicFilename : "Default."; //defaultImageUrl.split('/').pop();
+      const filename = file.substring(0, file.lastIndexOf("."));
+      downloadImageData(downloadCanvas, `${filename}-mosaic.jpg`, "jpg");
+    } else {
+      const imageURLToDownload = defaultImagePath + defaultImagesOptions[carouselCurrentIndex];
+      var imageToDownload = new Image(); // Creates image object
+      imageToDownload.src = imageURLToDownload; //"./images/MonalisaMosaic.jpg"; //"https://images.explorug.com/mosaic/monalisa.jpg"; // Assigns converted image to image object
+      imageToDownload.crossOrigin = "Anonymous";
+      downloadCanvas.width = canvasSize.x;
+      downloadCanvas.height = canvasSize.y;
+      imageToDownload.onload = function () {
+        downloadCanvasContext.drawImage(imageToDownload, 0, 0, downloadCanvas.width, downloadCanvas.height);
+        downloadImageData(downloadCanvas, `DefaultMosaic.jpg`, "jpg");
+        imageToDownload.onload = null;
+      };
+    }
   };
 
   const handleFullScreen = () => {
@@ -232,10 +260,76 @@ const MainPage = () => {
       toggleFullscreen();
     }
   };
+  const handleCarouselImageChange = (direction) => {
+    if (refCarousel && refCarousel.current) {
+      if (isCarouselFirstLoad) setLoading(true);
+      let currentIndex = carouselCurrentIndex;
+      if (direction === "prev") {
+        refCarousel.current.prev();
+        let newIndex = currentIndex - 1;
+        newIndex = newIndex < 0 ? defaultImagesOptions.length - 1 : newIndex;
+        setCarouselCurrentIndex(newIndex);
+      } else {
+        refCarousel.current.next();
+        let newIndex = currentIndex + 1;
+        newIndex = newIndex > defaultImagesOptions.length - 1 ? 0 : newIndex;
+        setCarouselCurrentIndex(newIndex);
+      }
+      if (zoomRef && zoomRef.current) {
+        if (zoomRef.current.state.scale !== 1) zoomRef.current.resetTransform();
+      }
+    }
+  };
+  const onCarouselImgLoad = (index) => {
+    if (loading) setLoading(false);
+  };
+  const onCarouselImgFail = () => {
+    setLoading(false);
+    if (refCarousel && refCarousel.current) refCarousel.current.goTo(0, true);
+    openNotification = { message: "Couldn't load next view", description: "Showing default view" };
+  };
+  const CarouselElem = (
+    <Carousel
+      // autoplay
+      autoplaySpeed={4000}
+      ref={refCarousel}
+      dots={{ className: "mosaic-dots" }}
+      className="mosaic-carousel"
+      style={{ width: "100%" }}
+      dotPosition={"top"}
+      style={{ width: canvasSize.x, height: canvasSize.y }}
+      lazyLoad={true}
+      onLazyLoad={(slidesLoaded) => {
+        if (slidesLoaded[0] === defaultImagesOptions.length) {
+          setLoading(false);
+          setIsCarouselFirstLoad(false);
+        }
+      }}
+    >
+      {defaultImagesOptions.map((defaultImage, index) => (
+        <div key={index}>
+          <img
+            onLoad={() => {
+              if (onCarouselImgLoad) onCarouselImgLoad(index);
+            }}
+            onError={() => {
+              if (onCarouselImgFail) onCarouselImgFail(index);
+            }}
+            className="mosaic-carousel-images"
+            src={`${defaultImagePath}${defaultImage}`}
+          />
+        </div>
+      ))}
+    </Carousel>
+  );
+
   return (
     <div ref={refMosaicPage}>
-      {inputImage && mosaicCanvasData && (
+      {
+        //inputImage && mosaicCanvasData &&
+        // canvasSize && canvasSize.x && canvasSize.y &&
         <ZoomImageViewer
+          zoomRef={zoomRef}
           mosaicCanvasData={mosaicCanvasData}
           inputImage={inputImage}
           canvasSize={canvasSize}
@@ -243,15 +337,20 @@ const MainPage = () => {
           handleOnImageLoad={handleOnImageLoad}
           alpha={alpha}
           handleDownload={downloadMosaic}
+          CarouselElem={CarouselElem}
+          showCarousel={showCarousel}
         ></ZoomImageViewer>
+      }
+
+      {showCarousel && (
+        <>
+          <LeftOutlined className="mainpage-icons" onClick={() => handleCarouselImageChange("prev")} />
+          <RightOutlined className="mainpage-icons" onClick={() => handleCarouselImageChange("next")} />
+        </>
       )}
 
       <ImageDropContainer onImageChange={handleImageChange} />
-      {/* <Button disabled={loading} type="primary" className="download-button" onClick={downloadMosaic}>
-        Download Image
-      </Button> */}
-
-      {loading && <Spinner />}
+      {<Spinner className={classNames({hidden: !loading})} />}
 
       <Fullscreen isFullScreen={isFullScreen} handleFullScreen={handleFullScreen} />
 

@@ -31,3 +31,65 @@ div#canvasArea {
     margin: auto;
   }
 }
+.ant-carousel {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  & > .slick-slider {
+    max-width: 100%;
+    max-height: calc(100vh - 0.5rem);
+
+    &.mosaic-carousel {
+      // display: flex;
+      align-items: center;
+    }
+  }
+  // .slick-list {
+  //   height: 100%;
+  //   width: auto;
+  // }
+  & .slick-dots li {
+    width: 2.5rem;
+    height: 1rem;
+    &.slick-active {
+      width: 4rem;
+    }
+  }
+  ul.slick-dots.slick-dots-top.mosaic-dots > li > button {
+    height: 0.75rem;
+  }
+  .slick-slide img {
+    align-self: center;
+  }
+}
+.mosaic-carousel-images {
+  height: 100%;
+  background: #364d79;
+  max-width: 100%;
+  max-height: calc(100vh);
+  align-self: center;
+  justify-self: center;
+  margin: auto;
+}
+
+.mainpage-icons {
+  position: absolute;
+  align-self: center;
+  display: flex;
+  cursor: pointer;
+  color: #ccc;
+  filter: drop-shadow(0 3px 1px rgba(0, 0, 0, 0.5));
+  &.anticon-right {
+    right: 1rem;
+  }
+  &.anticon-left {
+    left: 1rem;
+  }
+  &:hover {
+    color: white;
+  }
+  svg {
+    width: 4rem;
+    height: 4rem;
+  }
+}

@@ -31,6 +31,9 @@ const ZoomImageViewer = (props) => {
     handleOnImageLoad,
     alpha = 0.88,
     handleDownload,
+    CarouselElem,
+    showCarousel,
+    zoomRef
   } = props;
   const windowSize = useWindowSize();
   const [currentZoom, setCurrentZoom] = useState(1);
@@ -38,7 +41,7 @@ const ZoomImageViewer = (props) => {
   const [loading, setLoading] = useState(true);
   const [loadingPercentage, setLoadingPercentage] = useState(0);
   const imageRef = useRef(null);
-  const zoomRef = useRef(null);
+ // const zoomRef = useRef(null);
   const reloadRef = useRef(null);
 
   const options = {
@@ -73,12 +76,11 @@ const ZoomImageViewer = (props) => {
   const alignCanvasToCenter = () => {
     if (zoomRef && zoomRef.current) {
       if (zoomRef.current.state.scale === options.minScale) zoomRef.current.centerView();
-      console.log("alignCanvasToCenter -> zoomRef.current", zoomRef.current);
     }
   };
   useEffect(() => {
-    if (!mosaicCanvasData || !mosaicCanvasData.length)
-      console.log("ZoomImageViewer -> mosaicCanvasData", mosaicCanvasData.length);
+    if (!mosaicCanvasData)  return; 
+    //console.log("ZoomImageViewer -> mosaicCanvasData", mosaicCanvasData);
     let la = true;
 
     const drawTilesInCanvas = (mosaicData, canvasWid, canvasHgt, onComplete) => {
@@ -105,10 +107,7 @@ const ZoomImageViewer = (props) => {
       // var mosaicDataChunks = sliceIntoChunks(mosaicData, Math.ceil(mosaicData.length / numOfChunks));
       const chunksSize = 100;
       var mosaicDataChunks = sliceIntoChunks(mosaicData, chunksSize);
-      console.log("drawTilesInCanvas -> mosaicDataChunks", mosaicDataChunks);
-
       let chunkCount = 0;
-
       const loadImagesArray = (mosaicDataArr) => {
         var imageCountOfThisArr = 0;
         //console.log("loadImagesArray", mosaicDataArr.length, la);
@@ -162,6 +161,7 @@ const ZoomImageViewer = (props) => {
   }, [mosaicCanvasData]);
 
   useEffect(() => {
+    if (!inputImage) return;
     var mosaicCanvas = document.getElementById("inputMosaicImage");
     var mosaicContext = mosaicCanvas.getContext("2d");
     mosaicContext.clearRect(0, 0, mosaicCanvas.width, mosaicCanvas.height);
@@ -171,14 +171,15 @@ const ZoomImageViewer = (props) => {
     mosaicContext.drawImage(inputImage, 0, 0, mosaicCanvas.width, mosaicCanvas.height);
     setLoading(false);
   }, [inputImage]);
-  const contentStyle = {
-    height: "160px",
-    color: "#fff",
-    lineHeight: "160px",
-    textAlign: "center",
-    background: "#364d79",
-  };
 
+  
+  useEffect(() => {
+    var mosaicCanvas = document.getElementById("inputMosaicImage");
+    var mosaicContext = mosaicCanvas.getContext("2d");
+    mosaicCanvas.width = canvasSize.x; //inputImage.width;
+    mosaicCanvas.height = canvasSize.y; // inputImage.height;
+   }, [canvasSize]);
+  
   return (
     <>
       <div className={classNames("at-zoom-image-viewer-transformwrapper", { hidden: loading })}>
@@ -244,9 +245,17 @@ const ZoomImageViewer = (props) => {
                   <img className="zoom-image" src={""} ref={imageRef} alt="test" crossOrigin="true" />
                 ) : (
                   <>
-                    
-                    <canvas className="zoomTransformCanvas" id="inputMosaicImage" />
-                    <canvas className="zoomTransformCanvas" id="transformComponentCanvas" />
+                    {showCarousel && CarouselElem ? CarouselElem: <></>}
+                    <canvas
+                      style={{ display: showCarousel ? "none" : "flex" }}
+                      className="zoomTransformCanvas"
+                      id="inputMosaicImage"
+                    />
+                    <canvas
+                      style={{ display: showCarousel ? "none" : "flex" }}
+                      className="zoomTransformCanvas"
+                      id="transformComponentCanvas"
+                    />
                   </>
                 )}
               </TransformComponent>

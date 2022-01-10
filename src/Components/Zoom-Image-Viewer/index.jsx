@@ -131,7 +131,7 @@ const ZoomImageViewer = (props) => {
               if (chunkCount <= mosaicDataChunks.length - 1) loadImagesArray(mosaicDataChunks[chunkCount]);
               else {
                 setTimeout(() => {
-                  setLoadingPercentage(0);
+                  setLoadingPercentage(100);
                   openNotification = { message: "Loading completed", description: "" };
     
                 }, 1000);

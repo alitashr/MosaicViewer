@@ -264,7 +264,7 @@ const MainPage = () => {
       }
     }
   };
-  const onCarouselImgLoad = (index) => {
+  const onCarouselImgLoad = () => {
     if (loading) setLoading(false);
   };
   const onCarouselImgFail = () => {

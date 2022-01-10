@@ -132,6 +132,8 @@ const ZoomImageViewer = (props) => {
               else {
                 setTimeout(() => {
                   setLoadingPercentage(0);
+                  openNotification = { message: "Loading completed", description: "" };
+    
                 }, 1000);
                 if (handleOnLoadComplete) handleOnLoadComplete();
               }
